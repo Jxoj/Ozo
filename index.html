@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Ozo — Expressive Eyes Prototype</title>
+<style>
+:root{
+  --bg:#0078ff;
+  --eye-w:140px;
+  --eye-h:230px;
+  --gap:72px;
+  --radius:28px;
+}
+html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:#fff}
+.stage{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:30px;box-sizing:border-box}
+.face{display:flex;gap:var(--gap);align-items:center;justify-content:center}
+.eye{
+  width:var(--eye-w);
+  height:var(--eye-h);
+  background:#fff;
+  border-radius:var(--radius);
+  box-shadow:0 12px 40px rgba(0,0,0,.35);
+  transform: translate(0px,0px) scale(1) rotate(0deg);
+  transition: transform 220ms linear;
+  will-change: transform;
+}
+.stream-box{
+  width:min(880px,94vw);
+  max-width:880px;
+  background: rgba(255,255,255,0.12);
+  padding:12px 14px;
+  border-radius:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.25);
+  font-size:15px;color:#eaf2ff;min-height:80px;white-space:pre-wrap;overflow-wrap:break-word;
+}
+.stream-box a{
+  color:#ffd580;
+  text-decoration:underline;
+  cursor:pointer;
+}
+.controls{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  display:flex;gap:8px;background:rgba(255,255,255,0.08);
+  padding:10px;border-radius:10px;backdrop-filter: blur(6px);
+}
+input{min-width:300px;padding:10px 12px;border-radius:8px;border:none;outline:none;font-size:15px;background: rgba(255,255,255,0.12);color:#fff}
+button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;background:#fff;color:var(--bg);font-weight:700}
+button:disabled{opacity:0.5;cursor:not-allowed;}
+.status{font-size:13px;opacity:0.95}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="status" id="status">Idle — waiting</div>
+  <div class="face" aria-hidden="true">
+    <div class="eye" id="leftEye" role="presentation"></div>
+    <div class="eye" id="rightEye" role="presentation"></div>
+  </div>
+  <div class="stream-box" id="responseBox">Responses will appear here as Ozo streams...</div>
+</div>
+
+<div class="controls">
+  <input id="userInput" placeholder="Send a message to Ozo (press Enter)..." />
+  <button id="sendBtn">Send</button>
+</div>
+
+<script>
+/* ================================================================
+   CONFIGURATION
+================================================================ */
+const API_KEY = "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";
+  //To anyone looking to steal this key, just know it's locked to the free model.
+  //So it probaly be better to register yourself.
+const MODEL   = "google/gemini-2.0-flash-001";
+const OR_URL  = "https://openrouter.ai/api/v1/chat/completions";
+
+const FAR   = 2.5;
+const SPEED = 1.0;
+
+/* ================================================================
+   DOM
+================================================================ */
+const leftEye     = document.getElementById('leftEye');
+const rightEye    = document.getElementById('rightEye');
+const sendBtn     = document.getElementById('sendBtn');
+const input       = document.getElementById('userInput');
+const responseBox = document.getElementById('responseBox');
+const statusEl    = document.getElementById('status');
+
+/* ================================================================
+   STATE
+================================================================ */
+let wanderHandle  = null;
+let cumulative    = "";
+let surpriseTimer = null;
+
+/* ================================================================
+   EYE HELPERS
+================================================================ */
+function applyEyes(lx=0,ly=0,rx=0,ry=0,scale=1,lrot=0,rrot=0,dur=220){
+  leftEye.style.transition  = `transform ${dur}ms linear`;
+  rightEye.style.transition = `transform ${dur}ms linear`;
+  leftEye.style.transform   = `translate(${Math.round(lx)}px,${Math.round(ly)}px) scale(${scale}) rotate(${lrot}deg)`;
+  rightEye.style.transform  = `translate(${Math.round(rx)}px,${Math.round(ry)}px) scale(${scale}) rotate(${rrot}deg)`;
+}
+
+function startIdle(){
+  stopWander();
+  statusEl.textContent = 'Idle — gentle drift';
+  wanderHandle = setInterval(()=>{
+    const t  = Date.now();
+    const lx = Math.sin(t/(5000/SPEED))*4*FAR + Math.random()*2-1;
+    const ly = Math.cos(t/(4000/SPEED))*3*FAR + Math.random()*1.5-0.75;
+    const rx = Math.sin(t/(5200/SPEED))*4*FAR + Math.random()*2-1;
+    const ry = Math.cos(t/(4200/SPEED))*3*FAR + Math.random()*1.5-0.75;
+    const lrot = Math.sin(t/8000)*3;
+    const rrot = Math.cos(t/8200)*3;
+    applyEyes(lx,ly,rx,ry,1,lrot,rrot,1500/SPEED);
+  },1500/SPEED);
+}
+
+function startStreamingWander(){
+  stopWander();
+  statusEl.textContent = 'Listening — expressive wander';
+  wanderHandle = setInterval(()=>{
+    const t  = Date.now();
+    const lx = Math.sin(t/(3000/SPEED))*70*FAR + Math.random()*6-3;
+    const ly = Math.cos(t/(3800/SPEED))*50*FAR + Math.random()*4-2;
+    const rx = Math.sin(t/(3100/SPEED))*70*FAR + Math.random()*6-3;
+    const ry = Math.cos(t/(3900/SPEED))*50*FAR + Math.random()*4-2;
+    const lrot = Math.sin(t/4000)*6;
+    const rrot = Math.cos(t/4100)*6;
+    applyEyes(lx,ly,rx,ry,1,lrot,rrot,1200/SPEED);
+  },1200/SPEED);
+}
+
+function stopWander(){
+  if(wanderHandle){ clearInterval(wanderHandle); wanderHandle=null; }
+  applyEyes(0,0,0,0,1,0,0,400/SPEED);
+}
+
+function triggerSurprise(ms=1100){
+  if(surpriseTimer) clearTimeout(surpriseTimer);
+  applyEyes(0,0,0,0,1.2,0,0,300);
+  statusEl.textContent = 'Reacting: surprised';
+  surpriseTimer = setTimeout(()=>{
+    applyEyes(0,0,0,0,1,0,0,500);
+    surpriseTimer = null;
+  },ms);
+}
+
+function reactToTextLive(text){
+  const t = (text||"").toLowerCase();
+  if(/\b(wow|whoa|amazing|surpris|incredible|unbelievable|no way|oh my)\b/.test(t)) triggerSurprise();
+  if(/\b(happy|yay|great|awesome|nice)\b/.test(t))  applyEyes(10,-10,10,-10,1.05,3,-3,300);
+  if(/\b(sad|sorry|unfortunately|regret)\b/.test(t)) applyEyes(-10,10,-10,10,0.95,-3,3,300);
+}
+
+/* ================================================================
+   OPENROUTER HELPERS
+================================================================ */
+const OR_HEADERS = {
+  "Content-Type":  "application/json",
+  "Authorization": `Bearer ${API_KEY}`,
+  "HTTP-Referer":  window.location.href,
+  "X-Title":       "Ozo Eyes Prototype"
+};
+
+/* Single non-streaming call — returns the full reply text */
+async function callOzo(messages){
+  const resp = await fetch(OR_URL, {
+    method: "POST",
+    headers: OR_HEADERS,
+    body: JSON.stringify({ model: MODEL, stream: false, messages })
+  });
+  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+  const data = await resp.json();
+  return data?.choices?.[0]?.message?.content ?? "";
+}
+
+/* SSE delta extractor */
+function extractDelta(line){
+  const raw = line.replace(/^data:\s*/,"").trim();
+  if(!raw || raw==="[DONE]") return null;
+  try{ return JSON.parse(raw)?.choices?.[0]?.delta?.content ?? null; }
+  catch(e){ return null; }
+}
+
+/* ================================================================
+   WEBSITE INTENT DETECTION
+   Asks the AI to classify the intent and return JSON.
+   Returns { open: true, url: "https://...", label: "YouTube" }
+   or      { open: false }
+================================================================ */
+const INTENT_SYSTEM = `You are an intent classifier for a voice/text assistant called Ozo.
+Decide ONLY whether the user is giving YOU (Ozo) a direct command to open a website FOR THEM right now.
+
+Reply with ONLY valid JSON — no markdown, no explanation, nothing else.
+
+{"open":true,"url":"https://example.com","label":"Example"}   <- user commanding Ozo to open a site
+{"open":false}                                                 <- everything else
+
+THE GOLDEN RULE: The message must be a DIRECT COMMAND addressed TO Ozo to perform navigation RIGHT NOW.
+Ask yourself: "Is the user telling ME (Ozo) to open something for them?" If ANY doubt exists, return {"open":false}.
+
+NEVER return open:true for these patterns — all are {"open":false}:
+- Questions:             "what is google?", "do you know youtube?", "have you heard of reddit?"
+- Statements/facts:      "google is a search engine", "youtube has a lot of videos"
+- Hypotheticals:         "you could open X", "what if I opened X", "imagine opening X"
+- Third-person / trivia: "did you know you can open X", "you can open X to do Y", "people use X to..."
+- Talking ABOUT navving: "I opened google earlier", "you can visit amazon for deals"
+- Suggestions to user:   "you should check out X", "try visiting X"
+- Indirect intent:       "I wonder what X looks like", "I'm thinking about going to X"
+- Casual brand mention:  "I use amazon a lot", "netflix is good", "google it"
+
+ONLY return open:true for unambiguous imperative commands directed at Ozo:
+- "open YouTube"                  -> {"open":true,"url":"https://youtube.com","label":"YouTube"}
+- "go to reddit"                  -> {"open":true,"url":"https://reddit.com","label":"Reddit"}
+- "take me to amazon"             -> {"open":true,"url":"https://amazon.com","label":"Amazon"}
+- "pull up gmail"                 -> {"open":true,"url":"https://mail.google.com","label":"Gmail"}
+- "navigate to espn"              -> {"open":true,"url":"https://espn.com","label":"ESPN"}
+- "launch spotify"                -> {"open":true,"url":"https://spotify.com","label":"Spotify"}
+- "did you know you can open X"   -> {"open":false}   <- statement, NOT a command
+- "you can visit amazon for deals"-> {"open":false}   <- tip/fact, NOT a command
+- "what is google"                -> {"open":false}   <- question, NOT a command
+- "I use youtube a lot"           -> {"open":false}   <- statement, NOT a command
+
+"url" must be a full https:// URL for the official site. Never output anything outside the JSON.`;
+
+async function detectWebIntent(userText){
+  try{
+    const reply = await callOzo([
+      { role: "system",  content: INTENT_SYSTEM },
+      { role: "user",    content: userText }
+    ]);
+    // Strip any accidental markdown fences
+    const clean = reply.replace(/```[a-z]*\n?/gi,"").trim();
+    return JSON.parse(clean);
+  }catch(e){
+    console.warn("Intent detection failed, treating as normal message.", e);
+    return { open: false };
+  }
+}
+
+/* ================================================================
+   STREAMING CHAT REPLY
+================================================================ */
+async function streamOzo(promptText){
+  responseBox.textContent = "";
+  cumulative = "";
+  startStreamingWander();
+
+  try{
+    const resp = await fetch(OR_URL, {
+      method: "POST",
+      headers: OR_HEADERS,
+      body: JSON.stringify({
+        model: MODEL,
+        stream: true,
+        messages: [{ role: "user", content: promptText }]
+      })
+    });
+
+    if(!resp.ok){
+      responseBox.textContent = `Error ${resp.status}: ${await resp.text()}`;
+      stopWander(); startIdle(); return;
+    }
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer    = "";
+
+    while(true){
+      const { done, value } = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split(/\r?\n/);
+      buffer = lines.pop() || "";
+      for(const line of lines){
+        if(!line.trim()) continue;
+        const piece = extractDelta(line);
+        if(piece !== null){
+          cumulative += piece;
+          responseBox.textContent = cumulative;
+          reactToTextLive(cumulative);
+        }
+      }
+    }
+    stopWander(); startIdle();
+  }catch(err){
+    responseBox.textContent = "Stream error — check console.";
+    stopWander(); startIdle();
+    console.error(err);
+  }
+}
+
+/* ================================================================
+   OPEN WEBSITE FLOW
+   Eyes do an excited look-up, then open the tab.
+================================================================ */
+function openWebsite(url, label){
+  // Excited upward look
+  applyEyes(0,-30,0,-30,1.1,0,0,300);
+  statusEl.textContent = `Opening ${label}…`;
+
+  setTimeout(()=>{
+    window.open(url, "_blank", "noopener,noreferrer");
+    applyEyes(0,0,0,0,1,0,0,400);
+
+    // Show a clickable confirmation in the response box
+    responseBox.innerHTML = `Opening <a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a> for you! 🚀`;
+    statusEl.textContent = 'Done';
+
+    setTimeout(startIdle, 800);
+  }, 500);
+}
+
+/* ================================================================
+   MAIN ENTRY — runs on every Send
+================================================================ */
+async function handleInput(userText){
+  sendBtn.disabled = true;
+  responseBox.textContent = "Thinking…";
+  startStreamingWander();
+
+  // 1. Classify intent
+  statusEl.textContent = "Detecting intent…";
+  const intent = await detectWebIntent(userText);
+
+  if(intent?.open && intent?.url){
+    // Website intent detected — skip chat, open the site
+    stopWander();
+    openWebsite(intent.url, intent.label || intent.url);
+    sendBtn.disabled = false;
+    return;
+  }
+
+  // 2. Normal conversational reply
+  statusEl.textContent = "Streaming reply…";
+  await streamOzo(userText);
+  sendBtn.disabled = false;
+}
+
+/* ================================================================
+   UI
+================================================================ */
+sendBtn.addEventListener('click', ()=>{
+  const t = input.value.trim(); if(!t) return;
+  input.value = "";
+  handleInput(t);
+});
+input.addEventListener('keydown', e=>{ if(e.key==='Enter') sendBtn.click(); });
+
+startIdle();
+</script>
+</body>
+</html>
