@@ -65,7 +65,6 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 .sb-footer{padding:10px 14px;border-top:1px solid var(--w15);font-size:11.5px;color:var(--w60);text-align:center}
 .sb-footer a{color:var(--w60);text-decoration:none}.sb-footer a:hover{color:#fff}
 
-/* toggle shared style */
 .toggle{position:relative;width:36px;height:20px;cursor:pointer;background:var(--w20);border-radius:20px;transition:background .2s;border:1px solid var(--w30);flex-shrink:0}
 .toggle.on{background:rgba(255,255,255,.5)}
 .toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
@@ -200,6 +199,19 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 #stopBtn:hover{background:rgba(255,100,100,.25);border-color:rgba(255,120,120,.5)}
 .input-hint{font-size:11px;color:var(--w60);text-align:center;margin-top:6px}
 
+/* ── LOADING SCREEN ── */
+#loadingScreen{
+  position:fixed;inset:0;background:var(--blue);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;z-index:200;transition:opacity .3s;
+}
+#loadingScreen.hidden{opacity:0;pointer-events:none;}
+#loadingScreen .ld-eyes{display:flex;gap:28px}
+#loadingScreen .ld-eye{width:44px;height:72px;background:#fff;border-radius:10px;opacity:.4;animation:ldPulse 1.2s infinite}
+#loadingScreen .ld-eye:nth-child(2){animation-delay:.3s}
+@keyframes ldPulse{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:.9;transform:scaleY(1.08)}}
+#loadingScreen p{font-size:12px;color:var(--w60);letter-spacing:.1em;text-transform:uppercase}
+
 /* ── TOAST ── */
 #toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid var(--w20);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -228,16 +240,10 @@ body.jxomode #statusBar{display:none}
 body.jxomode .face-divider{display:none}
 body.jxomode .face{margin-top:0}
 body.jxomode .eye{width:60px;height:98px;border-radius:14px}
-:root{--eye-gap-jxo:28px}
 body.jxomode .face{gap:28px}
 body.jxomode #jxoResponse{display:block;margin-top:20px}
 #jxoResponse::-webkit-scrollbar{width:3px}#jxoResponse::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px}
-#jxoQuery{
-  margin-top:18px;font-size:15px;color:rgba(255,255,255,.85);
-  text-align:center;font-weight:500;letter-spacing:-.01em;
-  max-width:380px;line-height:1.4;
-  display:none;
-}
+#jxoQuery{margin-top:18px;font-size:15px;color:rgba(255,255,255,.85);text-align:center;font-weight:500;letter-spacing:-.01em;max-width:380px;line-height:1.4;display:none;}
 body.jxomode #jxoQuery{display:block}
 
 /* ── MINI MODE ── */
@@ -248,7 +254,6 @@ body.minimode .face-divider{display:none}
 body.minimode #faceZone{padding:18px 16px 14px}
 body.minimode #scrollBtn{display:none!important}
 
-/* mobile */
 @media(max-width:600px){
   #sidebar{position:absolute;top:0;left:0;height:100%;transform:translateX(0)}
   #sidebar.collapsed{transform:translateX(-100%);width:var(--sidebar);min-width:var(--sidebar);opacity:1}
@@ -257,8 +262,17 @@ body.minimode #scrollBtn{display:none!important}
 </style>
 </head>
 <body>
-<div id="shell">
 
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+  <div class="ld-eyes">
+    <div class="ld-eye"></div>
+    <div class="ld-eye"></div>
+  </div>
+  <p>Loading Ozo…</p>
+</div>
+
+<div id="shell">
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sb-top">
@@ -273,7 +287,6 @@ body.minimode #scrollBtn{display:none!important}
     </div>
     <div class="sb-section">Conversations</div>
     <div id="chatList"></div>
-
     <div class="sb-footer">
       Ozo by <a href="#" target="_blank">Jxo</a> &middot; <a href="https://openrouter.ai" target="_blank">OpenRouter</a>
     </div>
@@ -312,36 +325,19 @@ body.minimode #scrollBtn{display:none!important}
     </div>
 
     <div id="jxoResponse" style="display:none;width:min(520px,90vw);max-height:50vh;overflow-y:auto;font-size:14px;line-height:1.7;color:rgba(255,255,255,.92);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:16px 18px;backdrop-filter:blur(6px);margin:0 auto"></div>
+
     <div id="chatWrap">
       <div id="chat">
         <div id="welcome">
           <h2>Hey, I'm Ozo</h2>
           <p>Ask me anything — I can chat, search, and open websites.</p>
           <div class="suggestion-grid">
-            <div class="suggestion" data-q="Search for pie recipes">
-              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-              Search pie recipes
-            </div>
-            <div class="suggestion" data-q="Open YouTube">
-              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-              Open YouTube
-            </div>
-            <div class="suggestion" data-q="Take me to Gmail">
-              <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-              Open Gmail
-            </div>
-            <div class="suggestion" data-q="What is the meaning of life?">
-              <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
-              Meaning of life
-            </div>
-            <div class="suggestion" data-q="Write me a haiku about rain">
-              <svg viewBox="0 0 24 24"><path d="M6 19v2H4v-2h2zm4 0v2H8v-2h2zm4 0v2h-2v-2h2zm4 0v2h-2v-2h2zM4 3h16l-5 9H9L4 3zm2.83 2L9.5 10h5l2.67-5H6.83z"/></svg>
-              Haiku about rain
-            </div>
-            <div class="suggestion" data-q="Open a YouTube search for lofi music">
-              <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
-              Lofi on YouTube
-            </div>
+            <div class="suggestion" data-q="Search for pie recipes"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search pie recipes</div>
+            <div class="suggestion" data-q="Open YouTube"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Open YouTube</div>
+            <div class="suggestion" data-q="Take me to Gmail"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Open Gmail</div>
+            <div class="suggestion" data-q="What is the meaning of life?"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>Meaning of life</div>
+            <div class="suggestion" data-q="Write me a haiku about rain"><svg viewBox="0 0 24 24"><path d="M6 19v2H4v-2h2zm4 0v2H8v-2h2zm4 0v2h-2v-2h2zm4 0v2h-2v-2h2zM4 3h16l-5 9H9L4 3zm2.83 2L9.5 10h5l2.67-5H6.83z"/></svg>Haiku about rain</div>
+            <div class="suggestion" data-q="Open a YouTube search for lofi music"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>Lofi on YouTube</div>
           </div>
         </div>
       </div>
@@ -372,7 +368,6 @@ body.minimode #scrollBtn{display:none!important}
     </div>
   </div>
 </div>
-
 
 <!-- SETTINGS MODAL -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:101;opacity:0;pointer-events:none;transition:opacity .18s">
@@ -414,9 +409,28 @@ body.minimode #scrollBtn{display:none!important}
 /* ══════════════════════════════════════════════
    CONFIG
 ══════════════════════════════════════════════ */
-const API_KEY='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';
-const MODEL='google/gemini-2.0-flash-001';
-const OR_URL='https://openrouter.ai/api/v1/chat/completions';
+const KEYS_URL = 'https://jxoj.github.io/Ozo/keys.json';
+const MODEL = 'google/gemini-2.0-flash-lite-001';
+const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
+
+let API_KEY = '';
+
+async function loadKey() {
+  try {
+    const res = await fetch(KEYS_URL);
+    if (!res.ok) throw new Error('Failed to fetch keys');
+    const data = await res.json();
+    const keys = data.keys;
+    if (!keys || !keys.length) throw new Error('No keys in keys.json');
+    API_KEY = keys[Math.floor(Math.random() * keys.length)];
+  } catch (e) {
+    console.error('Key load error:', e);
+    // Show error in UI
+    document.getElementById('loadingScreen').innerHTML =
+      '<p style="color:#ffb3b3;font-size:14px;text-align:center;padding:20px">Failed to load API keys.<br>Check that keys.json is accessible.</p>';
+    throw e;
+  }
+}
 
 const SYSTEM_PROMPT=`You are Ozo, an AI assistant made by Jxo. You are friendly, concise, and helpful.
 Use markdown for formatting when it helps (lists, code blocks, headers, etc).
@@ -465,10 +479,8 @@ let currentChatId=null;
 let abortController=null;
 let isStreaming=false;
 let sidebarOpen=true;
-
-// Intent settings
 let intentPermEnabled=JSON.parse(localStorage.getItem('ozo_intent_perm')?? 'true');
-let intentOneOff=false; // flipped per-send by the toggle button
+let intentOneOff=false;
 
 /* ══════════════════════════════════════════════
    STORAGE
@@ -481,35 +493,28 @@ function deleteSession(id){saveSessions(getSessions().filter(s=>s.id!==id));}
 function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
 
 /* ══════════════════════════════════════════════
-   EYE ENGINE — full rewrite
-   - Idle: follows mouse cursor smoothly
-   - Thinking/streaming: expressive wander
-   - Click/action awareness
-   - AI emotion signals
-   - Eyes never cross or go past each other
+   EYE ENGINE
 ══════════════════════════════════════════════ */
-const EYE_MAX_X=18; // max horizontal travel per eye (prevents crossing)
-const EYE_MAX_Y=22; // max vertical travel
-const EYE_JXO_MAX=8; // smaller for jxo mode
+const EYE_MAX_X=18;
+const EYE_MAX_Y=22;
+const EYE_JXO_MAX=8;
 
-let eyeMode='idle'; // idle | think | stream | action | emotion
+let eyeMode='idle';
 let wanderHandle=null;
 let mouseX=window.innerWidth/2, mouseY=window.innerHeight/2;
 let currentEmotionTimer=null;
 let targetLX=0,targetLY=0,targetRX=0,targetRY=0,targetScale=1,targetLR=0,targetRR=0;
 let animFrame=null;
 
-// Track mouse globally
 document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;});
 
-// Low-pass lerp for smooth following
 let lerpLX=0,lerpLY=0,lerpRX=0,lerpRY=0,lerpScale=1,lerpLR=0,lerpRR=0;
 
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
 
 function runEyeFrame(){
-  const speed = eyeMode==='idle'?0.06:0.1;
+  const speed=eyeMode==='idle'?0.06:0.1;
   lerpLX=lerp(lerpLX,targetLX,speed);
   lerpLY=lerp(lerpLY,targetLY,speed);
   lerpRX=lerp(lerpRX,targetRX,speed);
@@ -517,152 +522,88 @@ function runEyeFrame(){
   lerpScale=lerp(lerpScale,targetScale,speed);
   lerpLR=lerp(lerpLR,targetLR,speed);
   lerpRR=lerp(lerpRR,targetRR,speed);
-
   leftEye.style.transition='none';
   rightEye.style.transition='none';
   leftEye.style.transform=`translate(${lerpLX.toFixed(1)}px,${lerpLY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpLR.toFixed(2)}deg)`;
   rightEye.style.transform=`translate(${lerpRX.toFixed(1)}px,${lerpRY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpRR.toFixed(2)}deg)`;
-
   animFrame=requestAnimationFrame(runEyeFrame);
 }
 
-function startEyeLoop(){
-  if(animFrame)cancelAnimationFrame(animFrame);
-  animFrame=requestAnimationFrame(runEyeFrame);
-}
+function startEyeLoop(){if(animFrame)cancelAnimationFrame(animFrame);animFrame=requestAnimationFrame(runEyeFrame);}
+function stopEyeLoop(){if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}}
 
-function stopEyeLoop(){
-  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
-}
-
-// ── IDLE: mouse tracking ──
 function startIdle(){
-  stopWander();
-  eyeMode='idle';
-  statusEl.textContent='Idle';
+  stopWander();eyeMode='idle';statusEl.textContent='Idle';
   if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}
-
-  const mx=EYE_MAX_X, my=EYE_MAX_Y;
+  const mx=EYE_MAX_X,my=EYE_MAX_Y;
   const faceEl=document.querySelector('.face');
-
   wanderHandle=setInterval(()=>{
     if(eyeMode!=='idle')return;
     const rect=faceEl.getBoundingClientRect();
-    const cx=rect.left+rect.width/2;
-    const cy=rect.top+rect.height/2;
-    // Map mouse position to eye offset — both eyes look toward cursor
+    const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const dx=clamp((mouseX-cx)/window.innerWidth*2,-1,1);
     const dy=clamp((mouseY-cy)/window.innerHeight*2,-1,1);
-    // Eyes move together in same direction (never cross)
-    const ex=dx*mx, ey=dy*my;
-    // Slight independent drift
-    const t=Date.now();
-    const drift=2;
-    targetLX=ex+Math.sin(t/3000)*drift;
-    targetLY=ey+Math.cos(t/4100)*drift;
-    targetRX=ex+Math.sin(t/3200)*drift;
-    targetRY=ey+Math.cos(t/3900)*drift;
-    targetScale=1;
-    targetLR=Math.sin(t/8000)*2;
-    targetRR=Math.cos(t/8200)*2;
+    const ex=dx*mx,ey=dy*my;
+    const t=Date.now(),drift=2;
+    targetLX=ex+Math.sin(t/3000)*drift;targetLY=ey+Math.cos(t/4100)*drift;
+    targetRX=ex+Math.sin(t/3200)*drift;targetRY=ey+Math.cos(t/3900)*drift;
+    targetScale=1;targetLR=Math.sin(t/8000)*2;targetRR=Math.cos(t/8200)*2;
   },50);
 }
 
-// ── THINKING: expressive wander ──
 function startThink(){
-  stopWander();
-  eyeMode='think';
-  statusEl.textContent='Thinking…';
-  const mx=EYE_MAX_X, my=EYE_MAX_Y;
+  stopWander();eyeMode='think';statusEl.textContent='Thinking…';
+  const mx=EYE_MAX_X,my=EYE_MAX_Y;
   wanderHandle=setInterval(()=>{
     if(eyeMode!=='think')return;
     const t=Date.now();
     const x=Math.sin(t/2200)*mx*.7+Math.random()*4-2;
     const y=Math.cos(t/2800)*my*.6+Math.random()*3-1.5;
-    targetLX=clamp(x,-mx,mx);
-    targetLY=clamp(y,-my,my);
-    targetRX=clamp(x+Math.sin(t/1900)*3,-mx,mx);
-    targetRY=clamp(y+Math.cos(t/2100)*3,-my,my);
-    targetScale=1;
-    targetLR=Math.sin(t/3000)*5;
-    targetRR=Math.cos(t/3200)*5;
+    targetLX=clamp(x,-mx,mx);targetLY=clamp(y,-my,my);
+    targetRX=clamp(x+Math.sin(t/1900)*3,-mx,mx);targetRY=clamp(y+Math.cos(t/2100)*3,-my,my);
+    targetScale=1;targetLR=Math.sin(t/3000)*5;targetRR=Math.cos(t/3200)*5;
   },60);
 }
 
-// ── JXO: small random wander ──
 function startJxoWander(){
-  eyeMode='jxo';
-  statusEl.textContent='';
+  eyeMode='jxo';statusEl.textContent='';
   const mx=EYE_JXO_MAX;
   wanderHandle=setInterval(()=>{
     const t=Date.now();
     const x=Math.sin(t/3000)*mx+Math.random()*2-1;
     const y=Math.cos(t/4000)*mx*.7+Math.random()*1.5-.75;
-    targetLX=clamp(x,-mx,mx);
-    targetLY=clamp(y,-mx,mx);
-    targetRX=clamp(x+Math.sin(t/2500)*2,-mx,mx);
-    targetRY=clamp(y+Math.cos(t/2700)*2,-mx,mx);
-    targetScale=1;
-    targetLR=Math.sin(t/8000)*2;
-    targetRR=Math.cos(t/8200)*2;
+    targetLX=clamp(x,-mx,mx);targetLY=clamp(y,-mx,mx);
+    targetRX=clamp(x+Math.sin(t/2500)*2,-mx,mx);targetRY=clamp(y+Math.cos(t/2700)*2,-mx,mx);
+    targetScale=1;targetLR=Math.sin(t/8000)*2;targetRR=Math.cos(t/8200)*2;
   },60);
 }
 
-function stopWander(){
-  if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}
-}
+function stopWander(){if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}}
 
-// ── ATTENTION SNAPS (for UI events) ──
 function eyesNotice(dx,dy,scale=1,dur=600){
-  // brief snap to position then return to current mode
-  const prev=eyeMode;
-  eyeMode='action';
-  targetLX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);
-  targetLY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
-  targetRX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);
-  targetRY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
+  const prev=eyeMode;eyeMode='action';
+  targetLX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);targetLY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
+  targetRX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);targetRY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
   targetScale=scale;
-  setTimeout(()=>{
-    if(eyeMode==='action'){
-      eyeMode=prev;
-      if(prev==='idle')startIdle();
-      else if(prev==='think')startThink();
-    }
-  },dur);
+  setTimeout(()=>{if(eyeMode==='action'){eyeMode=prev;if(prev==='idle')startIdle();else if(prev==='think')startThink();}},dur);
 }
 
-function eyesLookDown(){eyesNotice(0,10,1,500);}    // notice send
-function eyesLookUp(){eyesNotice(0,-14,1.05,600);}  // opening something
-function eyesLookLeft(){eyesNotice(-12,0,1,500);}   // switching chat
-function eyesWiden(){eyesNotice(0,0,1.18,700);}     // surprise
+function eyesLookDown(){eyesNotice(0,10,1,500);}
+function eyesLookUp(){eyesNotice(0,-14,1.05,600);}
+function eyesLookLeft(){eyesNotice(-12,0,1,500);}
+function eyesWiden(){eyesNotice(0,0,1.18,700);}
 
-// ── EMOTION SIGNALS from AI ──
 function applyEmotion(signal){
   if(currentEmotionTimer)clearTimeout(currentEmotionTimer);
   switch(signal){
-    case'HAPPY':
-      targetLX=4;targetLY=-12;targetRX=4;targetRY=-12;targetScale=1.06;targetLR=3;targetRR=-3;
-      break;
-    case'SAD':
-      targetLX=-3;targetLY=12;targetRX=-3;targetRY=12;targetScale=0.94;targetLR=-3;targetRR=3;
-      break;
-    case'SURPRISE':
-      targetLX=0;targetLY=-16;targetRX=0;targetRY=-16;targetScale=1.2;targetLR=0;targetRR=0;
-      break;
-    case'THINK':
-      targetLX=-14;targetLY=-4;targetRX=-10;targetRY=-4;targetScale=1;targetLR=-3;targetRR=-2;
-      break;
-    case'EXCITED':
-      targetLX=6;targetLY=-14;targetRX=6;targetRY=-14;targetScale=1.12;targetLR=5;targetRR=-5;
-      break;
-    case'CURIOUS':
-      targetLX=-8;targetLY=-8;targetRX=-6;targetRY=-8;targetScale=1.03;targetLR=-4;targetRR=-2;
-      break;
-    case'NEUTRAL':
-    default:
-      targetLX=0;targetLY=0;targetRX=0;targetRY=0;targetScale=1;targetLR=0;targetRR=0;
+    case'HAPPY':targetLX=4;targetLY=-12;targetRX=4;targetRY=-12;targetScale=1.06;targetLR=3;targetRR=-3;break;
+    case'SAD':targetLX=-3;targetLY=12;targetRX=-3;targetRY=12;targetScale=0.94;targetLR=-3;targetRR=3;break;
+    case'SURPRISE':targetLX=0;targetLY=-16;targetRX=0;targetRY=-16;targetScale=1.2;targetLR=0;targetRR=0;break;
+    case'THINK':targetLX=-14;targetLY=-4;targetRX=-10;targetRY=-4;targetScale=1;targetLR=-3;targetRR=-2;break;
+    case'EXCITED':targetLX=6;targetLY=-14;targetRX=6;targetRY=-14;targetScale=1.12;targetLR=5;targetRR=-5;break;
+    case'CURIOUS':targetLX=-8;targetLY=-8;targetRX=-6;targetRY=-8;targetScale=1.03;targetLR=-4;targetRR=-2;break;
+    default:targetLX=0;targetLY=0;targetRX=0;targetRY=0;targetScale=1;targetLR=0;targetRR=0;
   }
-  // auto-return after 1.5s unless overridden
   currentEmotionTimer=setTimeout(()=>{currentEmotionTimer=null;},1500);
 }
 
@@ -697,16 +638,11 @@ function updateIntentUI(){
   intentTogglePerm.classList.toggle('on',intentPermEnabled);
 }
 
-intentToggleBtn.addEventListener('click',()=>{
-  intentOneOff=!intentOneOff;
-  updateIntentUI();
-});
-
+intentToggleBtn.addEventListener('click',()=>{intentOneOff=!intentOneOff;updateIntentUI();});
 intentTogglePerm.addEventListener('click',()=>{
   intentPermEnabled=!intentPermEnabled;
   localStorage.setItem('ozo_intent_perm',JSON.stringify(intentPermEnabled));
-  intentOneOff=false;
-  updateIntentUI();
+  intentOneOff=false;updateIntentUI();
 });
 
 /* ══════════════════════════════════════════════
@@ -748,8 +684,7 @@ function startRename(item,titleEl,id){
 function startNewChat(){
   currentChatId=newId();
   upsertSession({id:currentChatId,title:'New Chat',history:[],messages:[],createdAt:Date.now()});
-  renderChatFromSession(getSession(currentChatId));
-  renderSidebar();
+  renderChatFromSession(getSession(currentChatId));renderSidebar();
 }
 function loadChat(id){currentChatId=id;const s=getSession(id);if(s){renderChatFromSession(s);renderSidebar();}}
 
@@ -866,7 +801,7 @@ function addCopyCodeBtns(bubble){
 function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast('Copied!'));}
 
 /* ══════════════════════════════════════════════
-   ICONS (SVG strings, no emoji)
+   ICONS
 ══════════════════════════════════════════════ */
 const ICONS={
   copy:`<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
@@ -879,26 +814,21 @@ const ICONS={
    EMOTION SIGNAL PARSING
 ══════════════════════════════════════════════ */
 const SIGNAL_RE=/\[OZO:(HAPPY|SAD|SURPRISE|THINK|EXCITED|CURIOUS|NEUTRAL)\]/g;
-
-function stripSignals(text){
-  return(text||'').replace(SIGNAL_RE,'');
-}
-
+function stripSignals(text){return(text||'').replace(SIGNAL_RE,'');}
 function processSignalsInChunk(chunk){
-  // find all signals in the latest chunk
   let m;const re=new RegExp(SIGNAL_RE.source,'g');
-  while((m=re.exec(chunk))!==null){
-    applyEmotion(m[1]);
-  }
+  while((m=re.exec(chunk))!==null){applyEmotion(m[1]);}
 }
 
 /* ══════════════════════════════════════════════
    OPENROUTER
 ══════════════════════════════════════════════ */
-const OR_HEADERS={'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`,'HTTP-Referer':window.location.href,'X-Title':'Ozo'};
+function getHeaders(){
+  return {'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`,'HTTP-Referer':window.location.href,'X-Title':'Ozo'};
+}
 
 async function callJSON(messages){
-  const r=await fetch(OR_URL,{method:'POST',headers:OR_HEADERS,body:JSON.stringify({model:MODEL,stream:false,messages})});
+  const r=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({model:MODEL,stream:false,messages})});
   if(!r.ok)throw new Error(`HTTP ${r.status}`);
   return(await r.json())?.choices?.[0]?.message?.content??'';
 }
@@ -921,9 +851,6 @@ Actions:
 4. chat      – everything else: {"action":"chat"}
 
 CRITICAL: Only trigger non-chat for unambiguous direct commands TO Ozo. When in doubt → chat.
-"did you know you can open X"→chat | "what is google"→chat | "open YouTube"→open_url
-"search for pie recipes"→search | "open a YouTube search for lofi"→open_search(youtube results url)
-"find airpods on amazon"→open_search(amazon s?k= url)
 Never output anything outside the JSON.`;
 
 async function detectIntent(text){
@@ -937,15 +864,13 @@ async function detectIntent(text){
 async function streamReply(userText){
   const s=getSession(currentChatId);
   const messages=[{role:'system',content:SYSTEM_PROMPT},...(s?.history||[]),{role:'user',content:userText}];
-
-  addTypingIndicator();
-  statusEl.textContent='Streaming…';
+  addTypingIndicator();statusEl.textContent='Streaming…';
   sendBtn.style.display='none';stopBtn.style.display='flex';
   abortController=new AbortController();
   let accumulated='';let bubble=null,row=null,acts=null;
 
   try{
-    const resp=await fetch(OR_URL,{method:'POST',headers:OR_HEADERS,signal:abortController.signal,body:JSON.stringify({model:MODEL,stream:true,messages})});
+    const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),signal:abortController.signal,body:JSON.stringify({model:MODEL,stream:true,messages})});
     removeTypingIndicator();
     if(!resp.ok){appendOzoBubble(`Error ${resp.status}`,false);return;}
 
@@ -964,12 +889,7 @@ async function streamReply(userText){
       for(const line of lines){
         if(!line.trim())continue;
         const piece=extractDelta(line);
-        if(piece!==null){
-          processSignalsInChunk(piece);
-          accumulated+=piece;
-          bubble.innerHTML=marked.parse(stripSignals(accumulated));
-          scrollToBottom();
-        }
+        if(piece!==null){processSignalsInChunk(piece);accumulated+=piece;bubble.innerHTML=marked.parse(stripSignals(accumulated));scrollToBottom();}
       }
     }
 
@@ -990,7 +910,6 @@ async function streamReply(userText){
   }finally{
     sendBtn.style.display='flex';stopBtn.style.display='none';
     isStreaming=false;abortController=null;
-    // reset one-off intent toggle after send
     intentOneOff=false;updateIntentUI();
   }
 }
@@ -1025,16 +944,10 @@ function exportChat(){
 async function handleInput(text){
   if(!text.trim()||isStreaming)return;
   sendBtn.disabled=true;isStreaming=true;textarea.style.height='auto';
-  appendUserBubble(text);
-  startThink();
-  eyesNotice(0,6,1,300); // notice the send
-
-  // Check if intent is active for this message
+  appendUserBubble(text);startThink();eyesNotice(0,6,1,300);
   const useIntent=intentPermEnabled&&!intentOneOff;
-
   let intent={action:'chat'};
   if(useIntent)intent=await detectIntent(text);
-
   switch(intent?.action){
     case'open_url':stopWander();doOpenUrl(intent.url,intent.label||intent.url);break;
     case'search':stopWander();doSearch(intent.query);break;
@@ -1049,15 +962,12 @@ async function handleInput(text){
 ══════════════════════════════════════════════ */
 sendBtn.addEventListener('click',()=>{
   const t=textarea.value.trim();if(!t)return;
-  textarea.value='';
-  eyesNotice(0,8,1.05,400); // look down at send button
-  handleInput(t);
+  textarea.value='';eyesNotice(0,8,1.05,400);handleInput(t);
 });
 textarea.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendBtn.click();}});
 textarea.addEventListener('input',()=>{textarea.style.height='auto';textarea.style.height=Math.min(textarea.scrollHeight,160)+'px';});
-textarea.addEventListener('focus',()=>{eyesNotice(0,10,1,400);}); // look at input when focused
+textarea.addEventListener('focus',()=>{eyesNotice(0,10,1,400);});
 stopBtn.addEventListener('click',()=>abortController?.abort());
-
 $('toggleSidebar').addEventListener('click',()=>{sidebarOpen=!sidebarOpen;$('sidebar').classList.toggle('collapsed',!sidebarOpen);});
 $('newChatBtn').addEventListener('click',()=>{eyesNotice(-8,-6,1,500);startNewChat();});
 $('exportBtn').addEventListener('click',exportChat);
@@ -1068,7 +978,6 @@ $('clearChatBtn').addEventListener('click',()=>{
     renderChatFromSession(getSession(currentChatId)||{messages:[]});renderSidebar();
   });
 });
-
 chatEl.addEventListener('scroll',()=>{
   const near=chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<120;
   scrollBtn.classList.toggle('visible',!near&&chatEl.scrollHeight>chatEl.clientHeight+100);
@@ -1076,24 +985,17 @@ chatEl.addEventListener('scroll',()=>{
 scrollBtn.addEventListener('click',scrollToBottom);
 
 /* ══════════════════════════════════════════════
-   JXO STREAM — streams AI response directly into #jxoResponse
+   JXO STREAM
 ══════════════════════════════════════════════ */
 async function streamJxoReply(query){
   const jxoBox=$('jxoResponse');
   jxoBox.style.display='block';
   jxoBox.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
   startThink();
-
-  const messages=[
-    {role:'system',content:SYSTEM_PROMPT},
-    {role:'user',content:query}
-  ];
-
+  const messages=[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:query}];
   try{
-    const resp=await fetch(OR_URL,{method:'POST',headers:OR_HEADERS,
-      body:JSON.stringify({model:MODEL,stream:true,messages})});
+    const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({model:MODEL,stream:true,messages})});
     if(!resp.ok){jxoBox.textContent='Error '+resp.status;startJxoWander();return;}
-
     let accumulated='';
     const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
     jxoBox.innerHTML='';
@@ -1104,71 +1006,69 @@ async function streamJxoReply(query){
       for(const line of lines){
         if(!line.trim())continue;
         const piece=extractDelta(line);
-        if(piece!==null){
-          processSignalsInChunk(piece);
-          accumulated+=piece;
-          jxoBox.innerHTML=marked.parse(stripSignals(accumulated));
-          jxoBox.scrollTop=jxoBox.scrollHeight;
-        }
+        if(piece!==null){processSignalsInChunk(piece);accumulated+=piece;jxoBox.innerHTML=marked.parse(stripSignals(accumulated));jxoBox.scrollTop=jxoBox.scrollHeight;}
       }
     }
     startJxoWander();
-  }catch(err){
-    jxoBox.textContent='Stream error.';
-    startJxoWander();
-    console.error(err);
-  }
+  }catch(err){jxoBox.textContent='Stream error.';startJxoWander();console.error(err);}
 }
 
 /* ══════════════════════════════════════════════
    SETTINGS MODAL
 ══════════════════════════════════════════════ */
 const settingsOverlay=$('settingsOverlay');
-$('settingsBtn').addEventListener('click',()=>{
-  settingsOverlay.style.opacity='1';settingsOverlay.style.pointerEvents='all';
-  $('settingsModal').style.transform='scale(1)';
-});
-function closeSettings(){
-  settingsOverlay.style.opacity='0';settingsOverlay.style.pointerEvents='none';
-  $('settingsModal').style.transform='scale(.96)';
-}
+$('settingsBtn').addEventListener('click',()=>{settingsOverlay.style.opacity='1';settingsOverlay.style.pointerEvents='all';$('settingsModal').style.transform='scale(1)';});
+function closeSettings(){settingsOverlay.style.opacity='0';settingsOverlay.style.pointerEvents='none';$('settingsModal').style.transform='scale(.96)';}
 $('settingsClose').addEventListener('click',closeSettings);
 settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)closeSettings();});
 
 /* ══════════════════════════════════════════════
-   MODES & BOOT
+   BOOT — async, fetches keys first
 ══════════════════════════════════════════════ */
-marked.setOptions({breaks:true,gfm:true});
-updateIntentUI();
-
-if(isJxo){
-  // JXO SEARCH MODE
-  document.body.classList.add('jxomode');
-  $('jxoQuery').textContent=jxoQuery?`"${jxoQuery}"`:'';
+(async () => {
+  marked.setOptions({breaks:true,gfm:true});
+  updateIntentUI();
   startEyeLoop();
-  startJxoWander();
-  if(jxoQuery)streamJxoReply(jxoQuery);
 
-}else if(isMini){
-  // MINI MODE
-  document.body.classList.add('minimode');
-  sidebarOpen=false;
-  const sessions=getSessions();
-  if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
-  renderSidebar();
-  startEyeLoop();
-  startIdle();
-  textarea.focus();
+  // Start eye animation during load
+  if(isJxo){
+    document.body.classList.add('jxomode');
+    startJxoWander();
+  } else {
+    startIdle();
+  }
 
-}else{
-  // NORMAL MODE
-  const sessions=getSessions();
-  if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
-  renderSidebar();
-  startEyeLoop();
-  startIdle();
-  textarea.focus();
-}
+  // Fetch API key
+  try {
+    await loadKey();
+  } catch(e) {
+    return; // loadKey already showed error UI
+  }
+
+  // Hide loading screen
+  const ls = $('loadingScreen');
+  ls.classList.add('hidden');
+  setTimeout(() => ls.remove(), 350);
+
+  if(isJxo){
+    $('jxoQuery').textContent = jxoQuery ? `"${jxoQuery}"` : '';
+    if(jxoQuery) streamJxoReply(jxoQuery);
+
+  } else if(isMini){
+    document.body.classList.add('minimode');
+    sidebarOpen=false;
+    const sessions=getSessions();
+    if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
+    renderSidebar();
+    textarea.focus();
+
+  } else {
+    const sessions=getSessions();
+    if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
+    renderSidebar();
+    textarea.focus();
+  }
+})();
 </script>
 </body>
 </html>
