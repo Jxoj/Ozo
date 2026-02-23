@@ -1,358 +1,1174 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Ozo — Expressive Eyes Prototype</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ozo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0078ff;
-  --eye-w:140px;
-  --eye-h:230px;
-  --gap:72px;
-  --radius:28px;
+  --blue:#0078ff;
+  --blue-dark:#0062d4;
+  --blue-deeper:#004fad;
+  --white:#ffffff;
+  --w10:rgba(255,255,255,.10);
+  --w15:rgba(255,255,255,.15);
+  --w20:rgba(255,255,255,.20);
+  --w30:rgba(255,255,255,.30);
+  --w60:rgba(255,255,255,.60);
+  --w80:rgba(255,255,255,.80);
+  --eye-w:120px;--eye-h:196px;--eye-r:26px;--eye-gap:56px;
+  --sidebar:258px;
 }
-html,body{height:100%;margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:#fff}
-.stage{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:30px;box-sizing:border-box}
-.face{display:flex;gap:var(--gap);align-items:center;justify-content:center}
+html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',system-ui,sans-serif;overflow:hidden}
+
+/* ── SHELL ── */
+#shell{display:flex;height:100vh;width:100vw;overflow:hidden}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--sidebar);min-width:var(--sidebar);
+  background:var(--blue-dark);border-right:1px solid var(--w15);
+  display:flex;flex-direction:column;
+  transition:width .25s,min-width .25s,opacity .25s;
+  z-index:20;overflow:hidden;
+}
+#sidebar.collapsed{width:0;min-width:0;opacity:0;border-right:none}
+.sb-top{padding:16px 12px 12px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--w15)}
+.sb-brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;padding:0 4px}
+.sb-brand svg{width:22px;height:22px;fill:#fff;opacity:.9}
+#newChatBtn{
+  display:flex;align-items:center;gap:8px;
+  background:var(--w20);color:#fff;border:1px solid var(--w30);
+  border-radius:10px;padding:9px 12px;cursor:pointer;
+  font-size:13.5px;font-weight:600;font-family:inherit;transition:background .15s;
+}
+#newChatBtn:hover{background:var(--w30)}
+#newChatBtn svg{width:15px;height:15px;fill:#fff;flex-shrink:0}
+.sb-section{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--w60);padding:10px 14px 4px}
+#chatList{flex:1;overflow-y:auto;padding:4px 8px;display:flex;flex-direction:column;gap:2px}
+#chatList::-webkit-scrollbar{width:3px}
+#chatList::-webkit-scrollbar-thumb{background:var(--w20);border-radius:3px}
+.chat-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:9px;cursor:pointer;transition:background .12s}
+.chat-item:hover{background:var(--w10)}
+.chat-item.active{background:var(--w20)}
+.ci-title{flex:1;font-size:13px;color:var(--w80);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.chat-item.active .ci-title{color:#fff}
+.ci-acts{display:none;gap:2px;flex-shrink:0}
+.chat-item:hover .ci-acts,.chat-item.active .ci-acts{display:flex}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--w60);padding:3px;border-radius:5px;display:flex;align-items:center;justify-content:center;transition:color .12s,background .12s}
+.icon-btn:hover{color:#fff;background:var(--w15)}
+.icon-btn.danger:hover{color:#ffb3b3;background:rgba(255,100,100,.2)}
+.icon-btn svg{width:14px;height:14px;fill:currentColor}
+.ci-input{flex:1;background:none;border:none;outline:none;color:#fff;font-size:13px;font-family:inherit;padding:0}
+.sb-footer{padding:10px 14px;border-top:1px solid var(--w15);font-size:11.5px;color:var(--w60);text-align:center}
+.sb-footer a{color:var(--w60);text-decoration:none}.sb-footer a:hover{color:#fff}
+
+/* toggle shared style */
+.toggle{position:relative;width:36px;height:20px;cursor:pointer;background:var(--w20);border-radius:20px;transition:background .2s;border:1px solid var(--w30);flex-shrink:0}
+.toggle.on{background:rgba(255,255,255,.5)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on::after{transform:translateX(16px)}
+
+/* ── MAIN ── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;background:var(--blue)}
+
+/* ── FACE ZONE ── */
+#faceZone{
+  flex-shrink:0;display:flex;flex-direction:column;align-items:center;
+  padding:28px 16px 20px;background:var(--blue);position:relative;z-index:10;
+}
+#topbar{
+  position:absolute;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;padding:8px 12px;
+}
+#toggleSidebar{background:none;border:none;cursor:pointer;color:var(--w60);padding:6px;border-radius:8px;display:flex;transition:color .12s,background .12s}
+#toggleSidebar:hover{color:#fff;background:var(--w10)}
+#toggleSidebar svg{width:19px;height:19px;fill:currentColor}
+.tb-right{display:flex;align-items:center;gap:6px}
+.top-btn{
+  background:var(--w10);border:1px solid var(--w20);color:var(--w80);
+  border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;font-family:inherit;transition:all .12s;
+}
+.top-btn:hover{background:var(--w20);color:#fff;border-color:var(--w30)}
+.top-btn svg{width:13px;height:13px;fill:currentColor}
+.top-btn.danger:hover{background:rgba(255,80,80,.15);border-color:rgba(255,120,120,.4);color:#ffb3b3}
+
+/* ── EYES ── */
+.face{display:flex;gap:var(--eye-gap);align-items:center;justify-content:center;margin-top:8px}
 .eye{
-  width:var(--eye-w);
-  height:var(--eye-h);
-  background:#fff;
-  border-radius:var(--radius);
-  box-shadow:0 12px 40px rgba(0,0,0,.35);
-  transform: translate(0px,0px) scale(1) rotate(0deg);
-  transition: transform 220ms linear;
-  will-change: transform;
+  width:var(--eye-w);height:var(--eye-h);
+  background:#fff;border-radius:var(--eye-r);
+  box-shadow:0 16px 48px rgba(0,0,0,.25),0 4px 16px rgba(0,0,0,.15);
+  transform:translate(0,0) scale(1) rotate(0deg);
+  transition:transform 300ms cubic-bezier(.25,.46,.45,.94);
+  will-change:transform;
 }
-.stream-box{
-  width:min(880px,94vw);
-  max-width:880px;
-  background: rgba(255,255,255,0.12);
-  padding:12px 14px;
-  border-radius:12px;
-  box-shadow:0 8px 24px rgba(0,0,0,0.25);
-  font-size:15px;color:#eaf2ff;min-height:80px;white-space:pre-wrap;overflow-wrap:break-word;
+#statusBar{margin-top:10px;font-size:11px;color:var(--w60);letter-spacing:.06em;text-transform:uppercase;height:14px}
+.face-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--w20) 20%,var(--w20) 80%,transparent);margin-top:16px}
+
+/* ── CHAT ── */
+#chatWrap{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
+#chat{flex:1;overflow-y:auto;padding:16px 0 8px;display:flex;flex-direction:column;gap:0;scroll-behavior:smooth}
+#chat::-webkit-scrollbar{width:4px}
+#chat::-webkit-scrollbar-thumb{background:var(--w20);border-radius:4px}
+
+#welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;text-align:center;padding:20px;min-height:180px}
+#welcome h2{color:#fff;font-size:1.15em;font-weight:600;opacity:.9}
+#welcome p{color:var(--w60);font-size:13.5px}
+.suggestion-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px;max-width:560px}
+.suggestion{background:var(--w10);border:1px solid var(--w20);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--w80);display:flex;align-items:center;gap:6px;transition:all .15s}
+.suggestion:hover{background:var(--w20);color:#fff;border-color:var(--w30)}
+.suggestion svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
+
+.msg-row{display:flex;padding:5px 16px;animation:fadeUp .18s ease;position:relative}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.msg-row.user{justify-content:flex-end}
+.msg-row.ozo{justify-content:flex-start}
+.msg-wrap{display:flex;flex-direction:column;gap:4px;max-width:78%}
+.msg-row.user .msg-wrap{align-items:flex-end}
+.msg-row.ozo .msg-wrap{align-items:flex-start}
+.msg-label{font-size:11px;color:var(--w60);padding:0 5px}
+.bubble{padding:11px 15px;border-radius:18px;font-size:14.5px;line-height:1.65;word-break:break-word}
+.msg-row.user .bubble{background:#fff;color:var(--blue-dark);border-bottom-right-radius:4px;font-weight:500}
+.msg-row.ozo .bubble{background:var(--w15);color:#fff;border-bottom-left-radius:4px;border:1px solid var(--w20);backdrop-filter:blur(4px)}
+.msg-row.ozo .bubble h1,.msg-row.ozo .bubble h2,.msg-row.ozo .bubble h3{color:#fff;margin:.6em 0 .3em;font-weight:700}
+.msg-row.ozo .bubble h1{font-size:1.15em}.msg-row.ozo .bubble h2{font-size:1.05em}.msg-row.ozo .bubble h3{font-size:.95em}
+.msg-row.ozo .bubble p{margin:.3em 0}
+.msg-row.ozo .bubble ul,.msg-row.ozo .bubble ol{padding-left:1.4em;margin:.3em 0}
+.msg-row.ozo .bubble li{margin:.2em 0}
+.msg-row.ozo .bubble code{background:rgba(0,0,0,.25);color:#d0eaff;padding:1px 6px;border-radius:4px;font-size:.88em;font-family:'Cascadia Code','Fira Code',monospace}
+.msg-row.ozo .bubble pre{background:rgba(0,0,0,.3);border:1px solid var(--w20);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:.5em 0;position:relative}
+.msg-row.ozo .bubble pre code{background:none;padding:0;color:#cce8ff}
+.copy-code-btn{position:absolute;top:6px;right:8px;background:var(--w20);border:1px solid var(--w30);color:var(--w80);border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .12s}
+.copy-code-btn:hover{background:var(--w30);color:#fff}
+.msg-row.ozo .bubble a{color:#b3d8ff;text-decoration:underline}
+.msg-row.ozo .bubble blockquote{border-left:3px solid var(--w30);padding-left:10px;color:var(--w80);margin:.4em 0}
+.msg-row.ozo .bubble table{border-collapse:collapse;font-size:.9em;width:100%;margin:.5em 0}
+.msg-row.ozo .bubble th,.msg-row.ozo .bubble td{border:1px solid var(--w20);padding:5px 9px;text-align:left}
+.msg-row.ozo .bubble th{background:rgba(0,0,0,.2);color:#fff}
+.msg-row.ozo .bubble strong{color:#fff}
+.msg-row.ozo .bubble em{color:var(--w80)}
+.msg-row.ozo .bubble hr{border:none;border-top:1px solid var(--w20);margin:.6em 0}
+
+.action-chip{display:inline-flex;align-items:center;gap:6px;background:var(--w20);border:1px solid var(--w30);color:#fff;border-radius:20px;padding:4px 12px;font-size:12.5px;cursor:pointer;transition:background .15s;text-decoration:none}
+.action-chip:hover{background:var(--w30)}
+.action-chip svg{width:13px;height:13px;fill:currentColor}
+
+.msg-actions{display:flex;gap:3px;margin-top:2px;opacity:0;transition:opacity .15s}
+.msg-row:hover .msg-actions{opacity:1}
+.msg-act-btn{background:none;border:none;cursor:pointer;color:var(--w60);padding:4px 7px;border-radius:6px;display:flex;align-items:center;gap:4px;font-size:11.5px;font-family:inherit;transition:all .12s}
+.msg-act-btn:hover{color:#fff;background:var(--w15)}
+.msg-act-btn svg{width:13px;height:13px;fill:currentColor}
+.msg-act-btn.intent-off{color:#ffcc80;border:1px solid rgba(255,200,100,.3)}
+.msg-act-btn.intent-off:hover{background:rgba(255,200,100,.15);color:#ffd54f}
+
+.typing{display:flex;gap:5px;align-items:center;padding:12px 16px}
+.typing span{width:8px;height:8px;background:var(--w60);border-radius:50%;animation:blink 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+#scrollBtn{position:absolute;bottom:8px;right:20px;background:var(--w20);border:1px solid var(--w30);color:#fff;border-radius:50%;width:34px;height:34px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;transition:all .15s}
+#scrollBtn.visible{display:flex}
+#scrollBtn:hover{background:var(--w30)}
+#scrollBtn svg{width:17px;height:17px;fill:currentColor}
+
+/* ── INPUT ── */
+#inputBar{padding:10px 14px 14px;background:var(--blue);border-top:1px solid var(--w15);flex-shrink:0}
+.input-top{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+#intentToggleBtn{
+  display:flex;align-items:center;gap:5px;
+  background:var(--w10);border:1px solid var(--w20);
+  color:var(--w80);border-radius:8px;padding:4px 10px;
+  font-size:12px;cursor:pointer;font-family:inherit;transition:all .12s;
 }
-.stream-box a{
-  color:#ffd580;
-  text-decoration:underline;
-  cursor:pointer;
+#intentToggleBtn:hover{background:var(--w20);color:#fff}
+#intentToggleBtn.off{background:rgba(255,200,100,.1);border-color:rgba(255,200,100,.3);color:#ffd54f}
+#intentToggleBtn svg{width:13px;height:13px;fill:currentColor}
+.input-row{display:flex;gap:8px;background:var(--w15);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:6px 6px 6px 14px;transition:border-color .15s,background .15s;backdrop-filter:blur(4px)}
+.input-row:focus-within{background:var(--w20);border-color:rgba(255,255,255,.4)}
+#userInput{flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:14.5px;resize:none;max-height:160px;line-height:1.5;padding:4px 0;font-family:inherit}
+#userInput::placeholder{color:var(--w60)}
+.input-btns{display:flex;flex-direction:column;gap:4px;align-self:flex-end}
+#sendBtn,#stopBtn{border:none;border-radius:10px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;flex-shrink:0}
+#sendBtn{background:#fff}#sendBtn:hover{background:rgba(255,255,255,.88)}#sendBtn:active{transform:scale(.93)}#sendBtn:disabled{opacity:.4;cursor:not-allowed}
+#sendBtn svg{width:17px;height:17px;fill:var(--blue-dark)}
+#stopBtn{background:var(--w20);border:1px solid var(--w30);display:none}
+#stopBtn svg{width:13px;height:13px;fill:#fff}
+#stopBtn:hover{background:rgba(255,100,100,.25);border-color:rgba(255,120,120,.5)}
+.input-hint{font-size:11px;color:var(--w60);text-align:center;margin-top:6px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid var(--w20);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── MODAL ── */
+#modalOverlay{position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .18s}
+#modalOverlay.open{opacity:1;pointer-events:all}
+#modal{background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(360px,90vw);transform:scale(.96);transition:transform .18s}
+#modalOverlay.open #modal{transform:scale(1)}
+#modal h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+#modal p{font-size:13.5px;color:var(--w80);margin-bottom:20px;line-height:1.5}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end}
+.modal-btn{border:none;border-radius:9px;padding:8px 18px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600}
+.modal-btn.cancel{background:var(--w15);color:#fff;border:1px solid var(--w30)}.modal-btn.cancel:hover{background:var(--w20)}
+.modal-btn.confirm{background:rgba(255,80,80,.85);color:#fff}.modal-btn.confirm:hover{background:rgba(255,80,80,1)}
+
+/* ── JXO SEARCH MODE ── */
+body.jxomode #shell{flex-direction:column;align-items:center;justify-content:center;overflow:auto}
+body.jxomode #sidebar{display:none}
+body.jxomode #main{flex:none;align-items:center;width:100%;max-width:520px;overflow:visible;padding:40px 20px}
+body.jxomode #topbar{display:none}
+body.jxomode #chatWrap{display:none}
+body.jxomode #inputBar{display:none}
+body.jxomode #faceZone{padding:0;background:transparent;width:100%;align-items:center;overflow:visible}
+body.jxomode #statusBar{display:none}
+body.jxomode .face-divider{display:none}
+body.jxomode .face{margin-top:0}
+body.jxomode .eye{width:60px;height:98px;border-radius:14px}
+:root{--eye-gap-jxo:28px}
+body.jxomode .face{gap:28px}
+body.jxomode #jxoResponse{display:block;margin-top:20px}
+#jxoResponse::-webkit-scrollbar{width:3px}#jxoResponse::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px}
+#jxoQuery{
+  margin-top:18px;font-size:15px;color:rgba(255,255,255,.85);
+  text-align:center;font-weight:500;letter-spacing:-.01em;
+  max-width:380px;line-height:1.4;
+  display:none;
 }
-.controls{
-  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
-  display:flex;gap:8px;background:rgba(255,255,255,0.08);
-  padding:10px;border-radius:10px;backdrop-filter: blur(6px);
+body.jxomode #jxoQuery{display:block}
+
+/* ── MINI MODE ── */
+body.minimode #sidebar{display:none}
+body.minimode #topbar{display:none}
+body.minimode #statusBar{display:none}
+body.minimode .face-divider{display:none}
+body.minimode #faceZone{padding:18px 16px 14px}
+body.minimode #scrollBtn{display:none!important}
+
+/* mobile */
+@media(max-width:600px){
+  #sidebar{position:absolute;top:0;left:0;height:100%;transform:translateX(0)}
+  #sidebar.collapsed{transform:translateX(-100%);width:var(--sidebar);min-width:var(--sidebar);opacity:1}
+  :root{--eye-w:90px;--eye-h:148px;--eye-gap:40px}
 }
-input{min-width:300px;padding:10px 12px;border-radius:8px;border:none;outline:none;font-size:15px;background: rgba(255,255,255,0.12);color:#fff}
-button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;background:#fff;color:var(--bg);font-weight:700}
-button:disabled{opacity:0.5;cursor:not-allowed;}
-.status{font-size:13px;opacity:0.95}
 </style>
 </head>
 <body>
-<div class="stage">
-  <div class="status" id="status">Idle — waiting</div>
-  <div class="face" aria-hidden="true">
-    <div class="eye" id="leftEye" role="presentation"></div>
-    <div class="eye" id="rightEye" role="presentation"></div>
+<div id="shell">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand">
+        <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        Ozo
+      </div>
+      <button id="newChatBtn">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        New Chat
+      </button>
+    </div>
+    <div class="sb-section">Conversations</div>
+    <div id="chatList"></div>
+
+    <div class="sb-footer">
+      Ozo by <a href="#" target="_blank">Jxo</a> &middot; <a href="https://openrouter.ai" target="_blank">OpenRouter</a>
+    </div>
   </div>
-  <div class="stream-box" id="responseBox">Responses will appear here as Ozo streams...</div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <div id="faceZone">
+      <div id="topbar">
+        <button id="toggleSidebar" title="Toggle sidebar">
+          <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </button>
+        <div class="tb-right">
+          <button class="top-btn" id="settingsBtn">
+            <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54a7.02 7.02 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.02 7.02 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
+            Settings
+          </button>
+          <button class="top-btn" id="exportBtn">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
+            Export
+          </button>
+          <button class="top-btn danger" id="clearChatBtn">
+            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div class="face" aria-hidden="true">
+        <div class="eye" id="leftEye"></div>
+        <div class="eye" id="rightEye"></div>
+      </div>
+      <div id="statusBar">Idle</div>
+      <div id="jxoQuery"></div>
+      <div class="face-divider"></div>
+    </div>
+
+    <div id="jxoResponse" style="display:none;width:min(520px,90vw);max-height:50vh;overflow-y:auto;font-size:14px;line-height:1.7;color:rgba(255,255,255,.92);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:16px 18px;backdrop-filter:blur(6px);margin:0 auto"></div>
+    <div id="chatWrap">
+      <div id="chat">
+        <div id="welcome">
+          <h2>Hey, I'm Ozo</h2>
+          <p>Ask me anything — I can chat, search, and open websites.</p>
+          <div class="suggestion-grid">
+            <div class="suggestion" data-q="Search for pie recipes">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              Search pie recipes
+            </div>
+            <div class="suggestion" data-q="Open YouTube">
+              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              Open YouTube
+            </div>
+            <div class="suggestion" data-q="Take me to Gmail">
+              <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              Open Gmail
+            </div>
+            <div class="suggestion" data-q="What is the meaning of life?">
+              <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+              Meaning of life
+            </div>
+            <div class="suggestion" data-q="Write me a haiku about rain">
+              <svg viewBox="0 0 24 24"><path d="M6 19v2H4v-2h2zm4 0v2H8v-2h2zm4 0v2h-2v-2h2zm4 0v2h-2v-2h2zM4 3h16l-5 9H9L4 3zm2.83 2L9.5 10h5l2.67-5H6.83z"/></svg>
+              Haiku about rain
+            </div>
+            <div class="suggestion" data-q="Open a YouTube search for lofi music">
+              <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+              Lofi on YouTube
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="scrollBtn" title="Scroll to bottom">
+        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+    </div>
+
+    <div id="inputBar">
+      <div class="input-top">
+        <button id="intentToggleBtn" title="Toggle smart intent for this message">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          Smart Intent: On
+        </button>
+      </div>
+      <div class="input-row">
+        <textarea id="userInput" rows="1" placeholder="Message Ozo…"></textarea>
+        <div class="input-btns">
+          <button id="stopBtn" title="Stop">
+            <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+          </button>
+          <button id="sendBtn" aria-label="Send">
+            <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="input-hint">Ozo by Jxo &middot; powered by OpenRouter</div>
+    </div>
+  </div>
 </div>
 
-<div class="controls">
-  <input id="userInput" placeholder="Send a message to Ozo (press Enter)..." />
-  <button id="sendBtn">Send</button>
+
+<!-- SETTINGS MODAL -->
+<div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:101;opacity:0;pointer-events:none;transition:opacity .18s">
+  <div id="settingsModal" style="background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(340px,92vw);transform:scale(.96);transition:transform .18s">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 style="font-size:15px;font-weight:700;color:#fff">Settings</h3>
+      <button id="settingsClose" style="background:none;border:none;cursor:pointer;color:var(--w60);padding:4px;border-radius:6px;display:flex" title="Close">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--w80)">
+        <div>
+          <div style="font-weight:600;color:#fff">Smart Intent</div>
+          <div style="font-size:12px;color:var(--w60);margin-top:2px">Detect when you want to open sites or search</div>
+        </div>
+        <div class="toggle on" id="intentTogglePerm" title="Enable/disable smart intent globally" style="flex-shrink:0;margin-left:14px"></div>
+      </div>
+      <div style="height:1px;background:var(--w15)"></div>
+      <div style="font-size:12px;color:var(--w60);text-align:center">
+        Ozo by Jxo &middot; powered by <a href="https://openrouter.ai" target="_blank" style="color:var(--w60)">OpenRouter</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="modalOverlay">
+  <div id="modal">
+    <h3 id="modalTitle"></h3><p id="modalMsg"></p>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" id="modalCancel">Cancel</button>
+      <button class="modal-btn confirm" id="modalConfirm">Delete</button>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ================================================================
-   CONFIGURATION
-================================================================ */
-const API_KEY = "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";
-  //To anyone looking to steal this key, just know it's locked to the free model.
-  //So it probaly be better to register yourself.
-const MODEL   = "google/gemini-2.0-flash-001";
-const OR_URL  = "https://openrouter.ai/api/v1/chat/completions";
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const API_KEY='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';
+const MODEL='google/gemini-2.0-flash-001';
+const OR_URL='https://openrouter.ai/api/v1/chat/completions';
 
-const FAR   = 2.5;
-const SPEED = 1.0;
+const SYSTEM_PROMPT=`You are Ozo, an AI assistant made by Jxo. You are friendly, concise, and helpful.
+Use markdown for formatting when it helps (lists, code blocks, headers, etc).
+You have expressive animated eyes that react to emotions.
 
-/* ================================================================
+EMOTION SIGNALS — you can embed these anywhere in your response to move your eyes.
+They will be stripped before display. Use them naturally to express how you feel:
+[OZO:HAPPY]    — upward bright look, slight grow
+[OZO:SAD]      — downward droopy look
+[OZO:SURPRISE] — wide eyes, big scale
+[OZO:THINK]    — side glance left
+[OZO:EXCITED]  — rapid movement, bigger
+[OZO:CURIOUS]  — tilt, look slightly up-left
+[OZO:NEUTRAL]  — return to center
+
+Example: "That's a great question! [OZO:CURIOUS] Let me think about that... [OZO:THINK] Here's what I found:"`;
+
+/* ══════════════════════════════════════════════
+   URL PARAMS
+══════════════════════════════════════════════ */
+const params=new URLSearchParams(window.location.search);
+const isMini=params.has('minimode');
+const isJxo=params.has('jxosearch');
+const jxoQuery=isJxo?decodeURIComponent(params.get('jxosearch')||''):'';
+
+/* ══════════════════════════════════════════════
    DOM
-================================================================ */
-const leftEye     = document.getElementById('leftEye');
-const rightEye    = document.getElementById('rightEye');
-const sendBtn     = document.getElementById('sendBtn');
-const input       = document.getElementById('userInput');
-const responseBox = document.getElementById('responseBox');
-const statusEl    = document.getElementById('status');
+══════════════════════════════════════════════ */
+const $=id=>document.getElementById(id);
+const leftEye=$('leftEye'),rightEye=$('rightEye');
+const sendBtn=$('sendBtn'),stopBtn=$('stopBtn');
+const textarea=$('userInput');
+const chatEl=$('chat');
+const statusEl=$('statusBar');
+const chatList=$('chatList');
+const toast=$('toast');
+const modalOverlay=$('modalOverlay');
+const scrollBtn=$('scrollBtn');
+const intentToggleBtn=$('intentToggleBtn');
+const intentTogglePerm=$('intentTogglePerm');
 
-/* ================================================================
+/* ══════════════════════════════════════════════
    STATE
-================================================================ */
-let wanderHandle  = null;
-let cumulative    = "";
-let surpriseTimer = null;
+══════════════════════════════════════════════ */
+let currentChatId=null;
+let abortController=null;
+let isStreaming=false;
+let sidebarOpen=true;
 
-/* ================================================================
-   EYE HELPERS
-================================================================ */
-function applyEyes(lx=0,ly=0,rx=0,ry=0,scale=1,lrot=0,rrot=0,dur=220){
-  leftEye.style.transition  = `transform ${dur}ms linear`;
-  rightEye.style.transition = `transform ${dur}ms linear`;
-  leftEye.style.transform   = `translate(${Math.round(lx)}px,${Math.round(ly)}px) scale(${scale}) rotate(${lrot}deg)`;
-  rightEye.style.transform  = `translate(${Math.round(rx)}px,${Math.round(ry)}px) scale(${scale}) rotate(${rrot}deg)`;
+// Intent settings
+let intentPermEnabled=JSON.parse(localStorage.getItem('ozo_intent_perm')?? 'true');
+let intentOneOff=false; // flipped per-send by the toggle button
+
+/* ══════════════════════════════════════════════
+   STORAGE
+══════════════════════════════════════════════ */
+function getSessions(){try{return JSON.parse(localStorage.getItem('ozo_sessions')||'[]');}catch{return[];}}
+function saveSessions(s){localStorage.setItem('ozo_sessions',JSON.stringify(s));}
+function getSession(id){return getSessions().find(s=>s.id===id)||null;}
+function upsertSession(s){const all=getSessions();const i=all.findIndex(x=>x.id===s.id);if(i>=0)all[i]=s;else all.unshift(s);saveSessions(all);}
+function deleteSession(id){saveSessions(getSessions().filter(s=>s.id!==id));}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+/* ══════════════════════════════════════════════
+   EYE ENGINE — full rewrite
+   - Idle: follows mouse cursor smoothly
+   - Thinking/streaming: expressive wander
+   - Click/action awareness
+   - AI emotion signals
+   - Eyes never cross or go past each other
+══════════════════════════════════════════════ */
+const EYE_MAX_X=18; // max horizontal travel per eye (prevents crossing)
+const EYE_MAX_Y=22; // max vertical travel
+const EYE_JXO_MAX=8; // smaller for jxo mode
+
+let eyeMode='idle'; // idle | think | stream | action | emotion
+let wanderHandle=null;
+let mouseX=window.innerWidth/2, mouseY=window.innerHeight/2;
+let currentEmotionTimer=null;
+let targetLX=0,targetLY=0,targetRX=0,targetRY=0,targetScale=1,targetLR=0,targetRR=0;
+let animFrame=null;
+
+// Track mouse globally
+document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;});
+
+// Low-pass lerp for smooth following
+let lerpLX=0,lerpLY=0,lerpRX=0,lerpRY=0,lerpScale=1,lerpLR=0,lerpRR=0;
+
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
+
+function runEyeFrame(){
+  const speed = eyeMode==='idle'?0.06:0.1;
+  lerpLX=lerp(lerpLX,targetLX,speed);
+  lerpLY=lerp(lerpLY,targetLY,speed);
+  lerpRX=lerp(lerpRX,targetRX,speed);
+  lerpRY=lerp(lerpRY,targetRY,speed);
+  lerpScale=lerp(lerpScale,targetScale,speed);
+  lerpLR=lerp(lerpLR,targetLR,speed);
+  lerpRR=lerp(lerpRR,targetRR,speed);
+
+  leftEye.style.transition='none';
+  rightEye.style.transition='none';
+  leftEye.style.transform=`translate(${lerpLX.toFixed(1)}px,${lerpLY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpLR.toFixed(2)}deg)`;
+  rightEye.style.transform=`translate(${lerpRX.toFixed(1)}px,${lerpRY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpRR.toFixed(2)}deg)`;
+
+  animFrame=requestAnimationFrame(runEyeFrame);
 }
 
+function startEyeLoop(){
+  if(animFrame)cancelAnimationFrame(animFrame);
+  animFrame=requestAnimationFrame(runEyeFrame);
+}
+
+function stopEyeLoop(){
+  if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}
+}
+
+// ── IDLE: mouse tracking ──
 function startIdle(){
   stopWander();
-  statusEl.textContent = 'Idle — gentle drift';
-  wanderHandle = setInterval(()=>{
-    const t  = Date.now();
-    const lx = Math.sin(t/(5000/SPEED))*4*FAR + Math.random()*2-1;
-    const ly = Math.cos(t/(4000/SPEED))*3*FAR + Math.random()*1.5-0.75;
-    const rx = Math.sin(t/(5200/SPEED))*4*FAR + Math.random()*2-1;
-    const ry = Math.cos(t/(4200/SPEED))*3*FAR + Math.random()*1.5-0.75;
-    const lrot = Math.sin(t/8000)*3;
-    const rrot = Math.cos(t/8200)*3;
-    applyEyes(lx,ly,rx,ry,1,lrot,rrot,1500/SPEED);
-  },1500/SPEED);
+  eyeMode='idle';
+  statusEl.textContent='Idle';
+  if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}
+
+  const mx=EYE_MAX_X, my=EYE_MAX_Y;
+  const faceEl=document.querySelector('.face');
+
+  wanderHandle=setInterval(()=>{
+    if(eyeMode!=='idle')return;
+    const rect=faceEl.getBoundingClientRect();
+    const cx=rect.left+rect.width/2;
+    const cy=rect.top+rect.height/2;
+    // Map mouse position to eye offset — both eyes look toward cursor
+    const dx=clamp((mouseX-cx)/window.innerWidth*2,-1,1);
+    const dy=clamp((mouseY-cy)/window.innerHeight*2,-1,1);
+    // Eyes move together in same direction (never cross)
+    const ex=dx*mx, ey=dy*my;
+    // Slight independent drift
+    const t=Date.now();
+    const drift=2;
+    targetLX=ex+Math.sin(t/3000)*drift;
+    targetLY=ey+Math.cos(t/4100)*drift;
+    targetRX=ex+Math.sin(t/3200)*drift;
+    targetRY=ey+Math.cos(t/3900)*drift;
+    targetScale=1;
+    targetLR=Math.sin(t/8000)*2;
+    targetRR=Math.cos(t/8200)*2;
+  },50);
 }
 
-function startStreamingWander(){
+// ── THINKING: expressive wander ──
+function startThink(){
   stopWander();
-  statusEl.textContent = 'Listening — expressive wander';
-  wanderHandle = setInterval(()=>{
-    const t  = Date.now();
-    const lx = Math.sin(t/(3000/SPEED))*70*FAR + Math.random()*6-3;
-    const ly = Math.cos(t/(3800/SPEED))*50*FAR + Math.random()*4-2;
-    const rx = Math.sin(t/(3100/SPEED))*70*FAR + Math.random()*6-3;
-    const ry = Math.cos(t/(3900/SPEED))*50*FAR + Math.random()*4-2;
-    const lrot = Math.sin(t/4000)*6;
-    const rrot = Math.cos(t/4100)*6;
-    applyEyes(lx,ly,rx,ry,1,lrot,rrot,1200/SPEED);
-  },1200/SPEED);
+  eyeMode='think';
+  statusEl.textContent='Thinking…';
+  const mx=EYE_MAX_X, my=EYE_MAX_Y;
+  wanderHandle=setInterval(()=>{
+    if(eyeMode!=='think')return;
+    const t=Date.now();
+    const x=Math.sin(t/2200)*mx*.7+Math.random()*4-2;
+    const y=Math.cos(t/2800)*my*.6+Math.random()*3-1.5;
+    targetLX=clamp(x,-mx,mx);
+    targetLY=clamp(y,-my,my);
+    targetRX=clamp(x+Math.sin(t/1900)*3,-mx,mx);
+    targetRY=clamp(y+Math.cos(t/2100)*3,-my,my);
+    targetScale=1;
+    targetLR=Math.sin(t/3000)*5;
+    targetRR=Math.cos(t/3200)*5;
+  },60);
+}
+
+// ── JXO: small random wander ──
+function startJxoWander(){
+  eyeMode='jxo';
+  statusEl.textContent='';
+  const mx=EYE_JXO_MAX;
+  wanderHandle=setInterval(()=>{
+    const t=Date.now();
+    const x=Math.sin(t/3000)*mx+Math.random()*2-1;
+    const y=Math.cos(t/4000)*mx*.7+Math.random()*1.5-.75;
+    targetLX=clamp(x,-mx,mx);
+    targetLY=clamp(y,-mx,mx);
+    targetRX=clamp(x+Math.sin(t/2500)*2,-mx,mx);
+    targetRY=clamp(y+Math.cos(t/2700)*2,-mx,mx);
+    targetScale=1;
+    targetLR=Math.sin(t/8000)*2;
+    targetRR=Math.cos(t/8200)*2;
+  },60);
 }
 
 function stopWander(){
-  if(wanderHandle){ clearInterval(wanderHandle); wanderHandle=null; }
-  applyEyes(0,0,0,0,1,0,0,400/SPEED);
+  if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}
 }
 
-function triggerSurprise(ms=1100){
-  if(surpriseTimer) clearTimeout(surpriseTimer);
-  applyEyes(0,0,0,0,1.2,0,0,300);
-  statusEl.textContent = 'Reacting: surprised';
-  surpriseTimer = setTimeout(()=>{
-    applyEyes(0,0,0,0,1,0,0,500);
-    surpriseTimer = null;
-  },ms);
+// ── ATTENTION SNAPS (for UI events) ──
+function eyesNotice(dx,dy,scale=1,dur=600){
+  // brief snap to position then return to current mode
+  const prev=eyeMode;
+  eyeMode='action';
+  targetLX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);
+  targetLY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
+  targetRX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);
+  targetRY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
+  targetScale=scale;
+  setTimeout(()=>{
+    if(eyeMode==='action'){
+      eyeMode=prev;
+      if(prev==='idle')startIdle();
+      else if(prev==='think')startThink();
+    }
+  },dur);
 }
 
-function reactToTextLive(text){
-  const t = (text||"").toLowerCase();
-  if(/\b(wow|whoa|amazing|surpris|incredible|unbelievable|no way|oh my)\b/.test(t)) triggerSurprise();
-  if(/\b(happy|yay|great|awesome|nice)\b/.test(t))  applyEyes(10,-10,10,-10,1.05,3,-3,300);
-  if(/\b(sad|sorry|unfortunately|regret)\b/.test(t)) applyEyes(-10,10,-10,10,0.95,-3,3,300);
+function eyesLookDown(){eyesNotice(0,10,1,500);}    // notice send
+function eyesLookUp(){eyesNotice(0,-14,1.05,600);}  // opening something
+function eyesLookLeft(){eyesNotice(-12,0,1,500);}   // switching chat
+function eyesWiden(){eyesNotice(0,0,1.18,700);}     // surprise
+
+// ── EMOTION SIGNALS from AI ──
+function applyEmotion(signal){
+  if(currentEmotionTimer)clearTimeout(currentEmotionTimer);
+  switch(signal){
+    case'HAPPY':
+      targetLX=4;targetLY=-12;targetRX=4;targetRY=-12;targetScale=1.06;targetLR=3;targetRR=-3;
+      break;
+    case'SAD':
+      targetLX=-3;targetLY=12;targetRX=-3;targetRY=12;targetScale=0.94;targetLR=-3;targetRR=3;
+      break;
+    case'SURPRISE':
+      targetLX=0;targetLY=-16;targetRX=0;targetRY=-16;targetScale=1.2;targetLR=0;targetRR=0;
+      break;
+    case'THINK':
+      targetLX=-14;targetLY=-4;targetRX=-10;targetRY=-4;targetScale=1;targetLR=-3;targetRR=-2;
+      break;
+    case'EXCITED':
+      targetLX=6;targetLY=-14;targetRX=6;targetRY=-14;targetScale=1.12;targetLR=5;targetRR=-5;
+      break;
+    case'CURIOUS':
+      targetLX=-8;targetLY=-8;targetRX=-6;targetRY=-8;targetScale=1.03;targetLR=-4;targetRR=-2;
+      break;
+    case'NEUTRAL':
+    default:
+      targetLX=0;targetLY=0;targetRX=0;targetRY=0;targetScale=1;targetLR=0;targetRR=0;
+  }
+  // auto-return after 1.5s unless overridden
+  currentEmotionTimer=setTimeout(()=>{currentEmotionTimer=null;},1500);
 }
 
-/* ================================================================
-   OPENROUTER HELPERS
-================================================================ */
-const OR_HEADERS = {
-  "Content-Type":  "application/json",
-  "Authorization": `Bearer ${API_KEY}`,
-  "HTTP-Referer":  window.location.href,
-  "X-Title":       "Ozo Eyes Prototype"
+/* ══════════════════════════════════════════════
+   TOAST & MODAL
+══════════════════════════════════════════════ */
+let toastTimer=null;
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);}
+
+function showModal(title,msg,confirmLabel,onConfirm){
+  $('modalTitle').textContent=title;$('modalMsg').textContent=msg;$('modalConfirm').textContent=confirmLabel||'Delete';
+  modalOverlay.classList.add('open');
+  const ok=()=>{modalOverlay.classList.remove('open');onConfirm();cleanup();};
+  const no=()=>{modalOverlay.classList.remove('open');cleanup();};
+  const bg=e=>{if(e.target===modalOverlay)no();};
+  function cleanup(){$('modalConfirm').removeEventListener('click',ok);$('modalCancel').removeEventListener('click',no);modalOverlay.removeEventListener('click',bg);}
+  $('modalConfirm').addEventListener('click',ok);$('modalCancel').addEventListener('click',no);modalOverlay.addEventListener('click',bg);
+}
+
+/* ══════════════════════════════════════════════
+   INTENT TOGGLE UI
+══════════════════════════════════════════════ */
+function updateIntentUI(){
+  const effective=intentPermEnabled&&!intentOneOff;
+  if(effective){
+    intentToggleBtn.classList.remove('off');
+    intentToggleBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Smart Intent: On`;
+  }else{
+    intentToggleBtn.classList.add('off');
+    intentToggleBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4 6H8v2h8V8zm0 4H8v2h8v-2zm-5 4H8v2h3v-2z"/></svg> Smart Intent: Off`;
+  }
+  intentTogglePerm.classList.toggle('on',intentPermEnabled);
+}
+
+intentToggleBtn.addEventListener('click',()=>{
+  intentOneOff=!intentOneOff;
+  updateIntentUI();
+});
+
+intentTogglePerm.addEventListener('click',()=>{
+  intentPermEnabled=!intentPermEnabled;
+  localStorage.setItem('ozo_intent_perm',JSON.stringify(intentPermEnabled));
+  intentOneOff=false;
+  updateIntentUI();
+});
+
+/* ══════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════ */
+function renderSidebar(){
+  chatList.innerHTML='';
+  const sessions=getSessions();
+  if(!sessions.length){chatList.innerHTML='<div style="padding:14px;font-size:12.5px;color:rgba(255,255,255,.5);text-align:center">No saved chats</div>';return;}
+  sessions.forEach(s=>{
+    const item=document.createElement('div');item.className='chat-item'+(s.id===currentChatId?' active':'');
+    const titleEl=document.createElement('div');titleEl.className='ci-title';titleEl.textContent=s.title||'Untitled';
+    const acts=document.createElement('div');acts.className='ci-acts';
+    const ren=mkIconBtn(`<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,'Rename');
+    ren.addEventListener('click',e=>{e.stopPropagation();startRename(item,titleEl,s.id);});
+    const del=mkIconBtn(`<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`,'Delete','danger');
+    del.addEventListener('click',e=>{e.stopPropagation();showModal('Delete chat','Delete "'+s.title+'"?','Delete',()=>{deleteSession(s.id);if(currentChatId===s.id)startNewChat();else renderSidebar();});});
+    acts.append(ren,del);item.append(titleEl,acts);
+    item.addEventListener('click',()=>{eyesLookLeft();loadChat(s.id);});
+    chatList.appendChild(item);
+  });
+}
+
+function mkIconBtn(svg,title,extra=''){
+  const b=document.createElement('button');b.className='icon-btn'+(extra?' '+extra:'');b.title=title;b.innerHTML=svg;return b;
+}
+
+function startRename(item,titleEl,id){
+  const inp=document.createElement('input');inp.className='ci-input';inp.value=titleEl.textContent;
+  item.replaceChild(inp,titleEl);inp.focus();inp.select();
+  const done=()=>{const v=inp.value.trim()||'Untitled';const s=getSession(id);if(s){s.title=v;upsertSession(s);}item.replaceChild(titleEl,inp);titleEl.textContent=v;renderSidebar();};
+  inp.addEventListener('blur',done);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=titleEl.textContent;inp.blur();}});
+}
+
+/* ══════════════════════════════════════════════
+   CHAT MANAGEMENT
+══════════════════════════════════════════════ */
+function startNewChat(){
+  currentChatId=newId();
+  upsertSession({id:currentChatId,title:'New Chat',history:[],messages:[],createdAt:Date.now()});
+  renderChatFromSession(getSession(currentChatId));
+  renderSidebar();
+}
+function loadChat(id){currentChatId=id;const s=getSession(id);if(s){renderChatFromSession(s);renderSidebar();}}
+
+function renderChatFromSession(s){
+  chatEl.innerHTML='';
+  if(!s?.messages?.length){chatEl.appendChild(buildWelcome());return;}
+  s.messages.forEach(m=>{
+    if(m.role==='user')appendUserBubble(m.text,false);
+    else if(m.role==='ozo')appendOzoBubble(m.text,true,false);
+    else if(m.role==='action')appendActionBubble(m.label,m.url,m.iconType,false);
+  });
+  scrollToBottom();
+}
+
+function buildWelcome(){
+  const w=document.createElement('div');w.id='welcome';
+  w.innerHTML=`
+    <h2>Hey, I'm Ozo</h2>
+    <p>Ask me anything — I can chat, search, and open websites.</p>
+    <div class="suggestion-grid">
+      <div class="suggestion" data-q="Search for pie recipes"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search pie recipes</div>
+      <div class="suggestion" data-q="Open YouTube"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Open YouTube</div>
+      <div class="suggestion" data-q="Take me to Gmail"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Open Gmail</div>
+      <div class="suggestion" data-q="What is the meaning of life?"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>Meaning of life</div>
+      <div class="suggestion" data-q="Write me a haiku about rain"><svg viewBox="0 0 24 24"><path d="M6 19v2H4v-2h2zm4 0v2H8v-2h2zm4 0v2h-2v-2h2zm4 0v2h-2v-2h2zM4 3h16l-5 9H9L4 3zm2.83 2L9.5 10h5l2.67-5H6.83z"/></svg>Haiku about rain</div>
+      <div class="suggestion" data-q="Open a YouTube search for lofi music"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>Lofi on YouTube</div>
+    </div>`;
+  w.querySelectorAll('.suggestion').forEach(el=>el.addEventListener('click',()=>handleInput(el.dataset.q)));
+  return w;
+}
+
+function saveMsg(role,data){
+  const s=getSession(currentChatId);if(!s)return;
+  s.messages=s.messages||[];s.messages.push({role,...data,ts:Date.now()});
+  if(role==='user'&&s.title==='New Chat'&&data.text)s.title=data.text.slice(0,44)+(data.text.length>44?'…':'');
+  upsertSession(s);renderSidebar();
+}
+function saveHistory(u,a){
+  const s=getSession(currentChatId);if(!s)return;
+  s.history=s.history||[];
+  s.history.push({role:'user',content:u},{role:'assistant',content:a});
+  if(s.history.length>40)s.history=s.history.slice(-40);
+  upsertSession(s);
+}
+
+/* ══════════════════════════════════════════════
+   UI BUILDERS
+══════════════════════════════════════════════ */
+function hideWelcome(){document.getElementById('welcome')?.remove();}
+function scrollToBottom(){chatEl.scrollTop=chatEl.scrollHeight;}
+
+function appendUserBubble(text,save=true){
+  hideWelcome();
+  const row=document.createElement('div');row.className='msg-row user';
+  const wrap=document.createElement('div');wrap.className='msg-wrap';
+  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='You';
+  const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;
+  const acts=document.createElement('div');acts.className='msg-actions';
+  acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(text)));
+  wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
+  scrollToBottom();if(save)saveMsg('user',{text});
+}
+
+function appendOzoBubble(text,isMarkdown=true,save=true){
+  hideWelcome();
+  const row=document.createElement('div');row.className='msg-row ozo';
+  const wrap=document.createElement('div');wrap.className='msg-wrap';
+  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
+  const bubble=document.createElement('div');bubble.className='bubble';
+  const clean=stripSignals(text);
+  if(isMarkdown)bubble.innerHTML=marked.parse(clean||'');else bubble.textContent=clean||'';
+  addCopyCodeBtns(bubble);
+  const acts=document.createElement('div');acts.className='msg-actions';
+  acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(clean)));
+  wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
+  scrollToBottom();if(save)saveMsg('ozo',{text});
+  return{row,bubble,acts};
+}
+
+function appendActionBubble(label,url,iconType='globe',save=true){
+  hideWelcome();
+  const row=document.createElement('div');row.className='msg-row ozo';
+  const wrap=document.createElement('div');wrap.className='msg-wrap';
+  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
+  const bubble=document.createElement('div');bubble.className='bubble';
+  const icon=iconType==='search'?ICONS.search:ICONS.globe;
+  bubble.innerHTML=`Opened <a class="action-chip" href="${url}" target="_blank" rel="noopener noreferrer">${icon}${label}</a>`;
+  wrap.append(lbl,bubble);row.appendChild(wrap);chatEl.appendChild(row);
+  scrollToBottom();if(save)saveMsg('action',{label,url,iconType});
+}
+
+function addTypingIndicator(){
+  hideWelcome();
+  const row=document.createElement('div');row.className='msg-row ozo';row.id='typing-ind';
+  const wrap=document.createElement('div');wrap.className='msg-wrap';
+  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
+  const bubble=document.createElement('div');bubble.className='bubble';
+  bubble.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  wrap.append(lbl,bubble);row.appendChild(wrap);chatEl.appendChild(row);scrollToBottom();
+}
+function removeTypingIndicator(){document.getElementById('typing-ind')?.remove();}
+
+function makeActBtn(label,iconSvg,onClick,extraClass=''){
+  const btn=document.createElement('button');btn.className='msg-act-btn'+(extraClass?' '+extraClass:'');
+  btn.innerHTML=iconSvg+' '+label;btn.addEventListener('click',onClick);return btn;
+}
+function addCopyCodeBtns(bubble){
+  bubble.querySelectorAll('pre').forEach(pre=>{
+    const btn=document.createElement('button');btn.className='copy-code-btn';btn.textContent='Copy';
+    btn.addEventListener('click',()=>{copyText((pre.querySelector('code')||pre).textContent);btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});
+    pre.style.position='relative';pre.appendChild(btn);
+  });
+}
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast('Copied!'));}
+
+/* ══════════════════════════════════════════════
+   ICONS (SVG strings, no emoji)
+══════════════════════════════════════════════ */
+const ICONS={
+  copy:`<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
+  regen:`<svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`,
+  globe:`<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`,
+  search:`<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`,
 };
 
-/* Single non-streaming call — returns the full reply text */
-async function callOzo(messages){
-  const resp = await fetch(OR_URL, {
-    method: "POST",
-    headers: OR_HEADERS,
-    body: JSON.stringify({ model: MODEL, stream: false, messages })
-  });
-  if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
-  const data = await resp.json();
-  return data?.choices?.[0]?.message?.content ?? "";
+/* ══════════════════════════════════════════════
+   EMOTION SIGNAL PARSING
+══════════════════════════════════════════════ */
+const SIGNAL_RE=/\[OZO:(HAPPY|SAD|SURPRISE|THINK|EXCITED|CURIOUS|NEUTRAL)\]/g;
+
+function stripSignals(text){
+  return(text||'').replace(SIGNAL_RE,'');
 }
 
-/* SSE delta extractor */
-function extractDelta(line){
-  const raw = line.replace(/^data:\s*/,"").trim();
-  if(!raw || raw==="[DONE]") return null;
-  try{ return JSON.parse(raw)?.choices?.[0]?.delta?.content ?? null; }
-  catch(e){ return null; }
-}
-
-/* ================================================================
-   WEBSITE INTENT DETECTION
-   Asks the AI to classify the intent and return JSON.
-   Returns { open: true, url: "https://...", label: "YouTube" }
-   or      { open: false }
-================================================================ */
-const INTENT_SYSTEM = `You are an intent classifier for a voice/text assistant called Ozo.
-Decide ONLY whether the user is giving YOU (Ozo) a direct command to open a website FOR THEM right now.
-
-Reply with ONLY valid JSON — no markdown, no explanation, nothing else.
-
-{"open":true,"url":"https://example.com","label":"Example"}   <- user commanding Ozo to open a site
-{"open":false}                                                 <- everything else
-
-THE GOLDEN RULE: The message must be a DIRECT COMMAND addressed TO Ozo to perform navigation RIGHT NOW.
-Ask yourself: "Is the user telling ME (Ozo) to open something for them?" If ANY doubt exists, return {"open":false}.
-
-NEVER return open:true for these patterns — all are {"open":false}:
-- Questions:             "what is google?", "do you know youtube?", "have you heard of reddit?"
-- Statements/facts:      "google is a search engine", "youtube has a lot of videos"
-- Hypotheticals:         "you could open X", "what if I opened X", "imagine opening X"
-- Third-person / trivia: "did you know you can open X", "you can open X to do Y", "people use X to..."
-- Talking ABOUT navving: "I opened google earlier", "you can visit amazon for deals"
-- Suggestions to user:   "you should check out X", "try visiting X"
-- Indirect intent:       "I wonder what X looks like", "I'm thinking about going to X"
-- Casual brand mention:  "I use amazon a lot", "netflix is good", "google it"
-
-ONLY return open:true for unambiguous imperative commands directed at Ozo:
-- "open YouTube"                  -> {"open":true,"url":"https://youtube.com","label":"YouTube"}
-- "go to reddit"                  -> {"open":true,"url":"https://reddit.com","label":"Reddit"}
-- "take me to amazon"             -> {"open":true,"url":"https://amazon.com","label":"Amazon"}
-- "pull up gmail"                 -> {"open":true,"url":"https://mail.google.com","label":"Gmail"}
-- "navigate to espn"              -> {"open":true,"url":"https://espn.com","label":"ESPN"}
-- "launch spotify"                -> {"open":true,"url":"https://spotify.com","label":"Spotify"}
-- "did you know you can open X"   -> {"open":false}   <- statement, NOT a command
-- "you can visit amazon for deals"-> {"open":false}   <- tip/fact, NOT a command
-- "what is google"                -> {"open":false}   <- question, NOT a command
-- "I use youtube a lot"           -> {"open":false}   <- statement, NOT a command
-
-"url" must be a full https:// URL for the official site. Never output anything outside the JSON.`;
-
-async function detectWebIntent(userText){
-  try{
-    const reply = await callOzo([
-      { role: "system",  content: INTENT_SYSTEM },
-      { role: "user",    content: userText }
-    ]);
-    // Strip any accidental markdown fences
-    const clean = reply.replace(/```[a-z]*\n?/gi,"").trim();
-    return JSON.parse(clean);
-  }catch(e){
-    console.warn("Intent detection failed, treating as normal message.", e);
-    return { open: false };
+function processSignalsInChunk(chunk){
+  // find all signals in the latest chunk
+  let m;const re=new RegExp(SIGNAL_RE.source,'g');
+  while((m=re.exec(chunk))!==null){
+    applyEmotion(m[1]);
   }
 }
 
-/* ================================================================
-   STREAMING CHAT REPLY
-================================================================ */
-async function streamOzo(promptText){
-  responseBox.textContent = "";
-  cumulative = "";
-  startStreamingWander();
+/* ══════════════════════════════════════════════
+   OPENROUTER
+══════════════════════════════════════════════ */
+const OR_HEADERS={'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`,'HTTP-Referer':window.location.href,'X-Title':'Ozo'};
+
+async function callJSON(messages){
+  const r=await fetch(OR_URL,{method:'POST',headers:OR_HEADERS,body:JSON.stringify({model:MODEL,stream:false,messages})});
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  return(await r.json())?.choices?.[0]?.message?.content??'';
+}
+function extractDelta(line){
+  const raw=line.replace(/^data:\s*/,'').trim();
+  if(!raw||raw==='[DONE]')return null;
+  try{return JSON.parse(raw)?.choices?.[0]?.delta?.content??null;}catch{return null;}
+}
+
+/* ══════════════════════════════════════════════
+   INTENT DETECTION
+══════════════════════════════════════════════ */
+const INTENT_SYSTEM=`You are an intent classifier for Ozo.
+Return ONLY valid JSON, nothing else.
+
+Actions:
+1. open_url  – direct command to open a website: {"action":"open_url","url":"https://...","label":"Name"}
+2. search    – command to search Google: {"action":"search","query":"...","label":"Search: ..."}
+3. open_search – command to open a platform search URL: {"action":"open_search","url":"https://...","label":"..."}
+4. chat      – everything else: {"action":"chat"}
+
+CRITICAL: Only trigger non-chat for unambiguous direct commands TO Ozo. When in doubt → chat.
+"did you know you can open X"→chat | "what is google"→chat | "open YouTube"→open_url
+"search for pie recipes"→search | "open a YouTube search for lofi"→open_search(youtube results url)
+"find airpods on amazon"→open_search(amazon s?k= url)
+Never output anything outside the JSON.`;
+
+async function detectIntent(text){
+  try{const r=await callJSON([{role:'system',content:INTENT_SYSTEM},{role:'user',content:text}]);return JSON.parse(r.replace(/```[a-z]*\n?/gi,'').trim());}
+  catch(e){console.warn('Intent fail',e);return{action:'chat'};}
+}
+
+/* ══════════════════════════════════════════════
+   STREAMING REPLY
+══════════════════════════════════════════════ */
+async function streamReply(userText){
+  const s=getSession(currentChatId);
+  const messages=[{role:'system',content:SYSTEM_PROMPT},...(s?.history||[]),{role:'user',content:userText}];
+
+  addTypingIndicator();
+  statusEl.textContent='Streaming…';
+  sendBtn.style.display='none';stopBtn.style.display='flex';
+  abortController=new AbortController();
+  let accumulated='';let bubble=null,row=null,acts=null;
 
   try{
-    const resp = await fetch(OR_URL, {
-      method: "POST",
-      headers: OR_HEADERS,
-      body: JSON.stringify({
-        model: MODEL,
-        stream: true,
-        messages: [{ role: "user", content: promptText }]
-      })
-    });
+    const resp=await fetch(OR_URL,{method:'POST',headers:OR_HEADERS,signal:abortController.signal,body:JSON.stringify({model:MODEL,stream:true,messages})});
+    removeTypingIndicator();
+    if(!resp.ok){appendOzoBubble(`Error ${resp.status}`,false);return;}
 
-    if(!resp.ok){
-      responseBox.textContent = `Error ${resp.status}: ${await resp.text()}`;
-      stopWander(); startIdle(); return;
-    }
+    row=document.createElement('div');row.className='msg-row ozo';
+    const wrap=document.createElement('div');wrap.className='msg-wrap';
+    const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
+    bubble=document.createElement('div');bubble.className='bubble';
+    acts=document.createElement('div');acts.className='msg-actions';
+    wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
 
-    const reader  = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer    = "";
-
+    const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
     while(true){
-      const { done, value } = await reader.read();
-      if(done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split(/\r?\n/);
-      buffer = lines.pop() || "";
+      const{done,value}=await reader.read();if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split(/\r?\n/);buffer=lines.pop()||'';
       for(const line of lines){
-        if(!line.trim()) continue;
-        const piece = extractDelta(line);
-        if(piece !== null){
-          cumulative += piece;
-          responseBox.textContent = cumulative;
-          reactToTextLive(cumulative);
+        if(!line.trim())continue;
+        const piece=extractDelta(line);
+        if(piece!==null){
+          processSignalsInChunk(piece);
+          accumulated+=piece;
+          bubble.innerHTML=marked.parse(stripSignals(accumulated));
+          scrollToBottom();
         }
       }
     }
-    stopWander(); startIdle();
+
+    addCopyCodeBtns(bubble);
+    acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(stripSignals(accumulated))));
+    acts.appendChild(makeActBtn('Regenerate',ICONS.regen,()=>{
+      row.remove();
+      const sess=getSession(currentChatId);
+      if(sess){sess.messages=sess.messages.filter((_,i,a)=>!(i===a.length-1&&a[i].role==='ozo'));upsertSession(sess);}
+      streamReply(userText);
+    }));
+    saveMsg('ozo',{text:accumulated});saveHistory(userText,accumulated);
+
   }catch(err){
-    responseBox.textContent = "Stream error — check console.";
-    stopWander(); startIdle();
+    removeTypingIndicator();
+    if(err.name!=='AbortError'){appendOzoBubble('Stream error — check console.',false);console.error(err);}
+    else{if(accumulated&&bubble){addCopyCodeBtns(bubble);saveMsg('ozo',{text:accumulated});saveHistory(userText,accumulated);}showToast('Stopped.');}
+  }finally{
+    sendBtn.style.display='flex';stopBtn.style.display='none';
+    isStreaming=false;abortController=null;
+    // reset one-off intent toggle after send
+    intentOneOff=false;updateIntentUI();
+  }
+}
+
+/* ══════════════════════════════════════════════
+   INTENT ACTIONS
+══════════════════════════════════════════════ */
+function doOpenUrl(url,label){eyesLookUp();statusEl.textContent=`Opening ${label}…`;setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(label,url,'globe');applyEmotion('EXCITED');setTimeout(startIdle,800);},400);}
+function doSearch(q){const url=`https://www.google.com/search?q=${encodeURIComponent(q)}`;eyesLookUp();statusEl.textContent='Searching…';setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(`Search: ${q}`,url,'search');applyEmotion('CURIOUS');setTimeout(startIdle,800);},400);}
+function doOpenSearch(url,label){eyesLookUp();statusEl.textContent='Opening search…';setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(label,url,'search');applyEmotion('CURIOUS');setTimeout(startIdle,800);},400);}
+
+/* ══════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════ */
+function exportChat(){
+  const s=getSession(currentChatId);
+  if(!s?.messages?.length){showToast('Nothing to export.');return;}
+  let md=`# ${s.title}\n_Ozo by Jxo · ${new Date().toLocaleString()}_\n\n---\n\n`;
+  s.messages.forEach(m=>{
+    if(m.role==='user')md+=`**You:** ${m.text}\n\n`;
+    else if(m.role==='ozo')md+=`**Ozo:** ${stripSignals(m.text)}\n\n`;
+    else if(m.role==='action')md+=`**Ozo opened:** [${m.label}](${m.url})\n\n`;
+  });
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
+  a.download=`ozo-${s.title.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.md`;a.click();
+  showToast('Exported!');
+}
+
+/* ══════════════════════════════════════════════
+   MAIN HANDLER
+══════════════════════════════════════════════ */
+async function handleInput(text){
+  if(!text.trim()||isStreaming)return;
+  sendBtn.disabled=true;isStreaming=true;textarea.style.height='auto';
+  appendUserBubble(text);
+  startThink();
+  eyesNotice(0,6,1,300); // notice the send
+
+  // Check if intent is active for this message
+  const useIntent=intentPermEnabled&&!intentOneOff;
+
+  let intent={action:'chat'};
+  if(useIntent)intent=await detectIntent(text);
+
+  switch(intent?.action){
+    case'open_url':stopWander();doOpenUrl(intent.url,intent.label||intent.url);break;
+    case'search':stopWander();doSearch(intent.query);break;
+    case'open_search':stopWander();doOpenSearch(intent.url,intent.label||'Search');break;
+    default:await streamReply(text);stopWander();startIdle();
+  }
+  sendBtn.disabled=false;isStreaming=false;
+}
+
+/* ══════════════════════════════════════════════
+   EVENTS
+══════════════════════════════════════════════ */
+sendBtn.addEventListener('click',()=>{
+  const t=textarea.value.trim();if(!t)return;
+  textarea.value='';
+  eyesNotice(0,8,1.05,400); // look down at send button
+  handleInput(t);
+});
+textarea.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendBtn.click();}});
+textarea.addEventListener('input',()=>{textarea.style.height='auto';textarea.style.height=Math.min(textarea.scrollHeight,160)+'px';});
+textarea.addEventListener('focus',()=>{eyesNotice(0,10,1,400);}); // look at input when focused
+stopBtn.addEventListener('click',()=>abortController?.abort());
+
+$('toggleSidebar').addEventListener('click',()=>{sidebarOpen=!sidebarOpen;$('sidebar').classList.toggle('collapsed',!sidebarOpen);});
+$('newChatBtn').addEventListener('click',()=>{eyesNotice(-8,-6,1,500);startNewChat();});
+$('exportBtn').addEventListener('click',exportChat);
+$('clearChatBtn').addEventListener('click',()=>{
+  showModal('Clear chat','All messages will be deleted.','Clear',()=>{
+    const s=getSession(currentChatId);
+    if(s){s.messages=[];s.history=[];s.title='New Chat';upsertSession(s);}
+    renderChatFromSession(getSession(currentChatId)||{messages:[]});renderSidebar();
+  });
+});
+
+chatEl.addEventListener('scroll',()=>{
+  const near=chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<120;
+  scrollBtn.classList.toggle('visible',!near&&chatEl.scrollHeight>chatEl.clientHeight+100);
+});
+scrollBtn.addEventListener('click',scrollToBottom);
+
+/* ══════════════════════════════════════════════
+   JXO STREAM — streams AI response directly into #jxoResponse
+══════════════════════════════════════════════ */
+async function streamJxoReply(query){
+  const jxoBox=$('jxoResponse');
+  jxoBox.style.display='block';
+  jxoBox.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  startThink();
+
+  const messages=[
+    {role:'system',content:SYSTEM_PROMPT},
+    {role:'user',content:query}
+  ];
+
+  try{
+    const resp=await fetch(OR_URL,{method:'POST',headers:OR_HEADERS,
+      body:JSON.stringify({model:MODEL,stream:true,messages})});
+    if(!resp.ok){jxoBox.textContent='Error '+resp.status;startJxoWander();return;}
+
+    let accumulated='';
+    const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
+    jxoBox.innerHTML='';
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      buffer+=decoder.decode(value,{stream:true});
+      const lines=buffer.split(/\r?\n/);buffer=lines.pop()||'';
+      for(const line of lines){
+        if(!line.trim())continue;
+        const piece=extractDelta(line);
+        if(piece!==null){
+          processSignalsInChunk(piece);
+          accumulated+=piece;
+          jxoBox.innerHTML=marked.parse(stripSignals(accumulated));
+          jxoBox.scrollTop=jxoBox.scrollHeight;
+        }
+      }
+    }
+    startJxoWander();
+  }catch(err){
+    jxoBox.textContent='Stream error.';
+    startJxoWander();
     console.error(err);
   }
 }
 
-/* ================================================================
-   OPEN WEBSITE FLOW
-   Eyes do an excited look-up, then open the tab.
-================================================================ */
-function openWebsite(url, label){
-  // Excited upward look
-  applyEyes(0,-30,0,-30,1.1,0,0,300);
-  statusEl.textContent = `Opening ${label}…`;
-
-  setTimeout(()=>{
-    window.open(url, "_blank", "noopener,noreferrer");
-    applyEyes(0,0,0,0,1,0,0,400);
-
-    // Show a clickable confirmation in the response box
-    responseBox.innerHTML = `Opening <a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a> for you! 🚀`;
-    statusEl.textContent = 'Done';
-
-    setTimeout(startIdle, 800);
-  }, 500);
-}
-
-/* ================================================================
-   MAIN ENTRY — runs on every Send
-================================================================ */
-async function handleInput(userText){
-  sendBtn.disabled = true;
-  responseBox.textContent = "Thinking…";
-  startStreamingWander();
-
-  // 1. Classify intent
-  statusEl.textContent = "Detecting intent…";
-  const intent = await detectWebIntent(userText);
-
-  if(intent?.open && intent?.url){
-    // Website intent detected — skip chat, open the site
-    stopWander();
-    openWebsite(intent.url, intent.label || intent.url);
-    sendBtn.disabled = false;
-    return;
-  }
-
-  // 2. Normal conversational reply
-  statusEl.textContent = "Streaming reply…";
-  await streamOzo(userText);
-  sendBtn.disabled = false;
-}
-
-/* ================================================================
-   UI
-================================================================ */
-sendBtn.addEventListener('click', ()=>{
-  const t = input.value.trim(); if(!t) return;
-  input.value = "";
-  handleInput(t);
+/* ══════════════════════════════════════════════
+   SETTINGS MODAL
+══════════════════════════════════════════════ */
+const settingsOverlay=$('settingsOverlay');
+$('settingsBtn').addEventListener('click',()=>{
+  settingsOverlay.style.opacity='1';settingsOverlay.style.pointerEvents='all';
+  $('settingsModal').style.transform='scale(1)';
 });
-input.addEventListener('keydown', e=>{ if(e.key==='Enter') sendBtn.click(); });
+function closeSettings(){
+  settingsOverlay.style.opacity='0';settingsOverlay.style.pointerEvents='none';
+  $('settingsModal').style.transform='scale(.96)';
+}
+$('settingsClose').addEventListener('click',closeSettings);
+settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)closeSettings();});
 
-startIdle();
+/* ══════════════════════════════════════════════
+   MODES & BOOT
+══════════════════════════════════════════════ */
+marked.setOptions({breaks:true,gfm:true});
+updateIntentUI();
+
+if(isJxo){
+  // JXO SEARCH MODE
+  document.body.classList.add('jxomode');
+  $('jxoQuery').textContent=jxoQuery?`"${jxoQuery}"`:'';
+  startEyeLoop();
+  startJxoWander();
+  if(jxoQuery)streamJxoReply(jxoQuery);
+
+}else if(isMini){
+  // MINI MODE
+  document.body.classList.add('minimode');
+  sidebarOpen=false;
+  const sessions=getSessions();
+  if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
+  renderSidebar();
+  startEyeLoop();
+  startIdle();
+  textarea.focus();
+
+}else{
+  // NORMAL MODE
+  const sessions=getSessions();
+  if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
+  renderSidebar();
+  startEyeLoop();
+  startIdle();
+  textarea.focus();
+}
 </script>
 </body>
 </html>
