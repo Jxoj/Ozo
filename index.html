@@ -259,6 +259,91 @@ body.minimode #scrollBtn{display:none!important}
   #sidebar.collapsed{transform:translateX(-100%);width:var(--sidebar);min-width:var(--sidebar);opacity:1}
   :root{--eye-w:90px;--eye-h:148px;--eye-gap:40px}
 }
+
+/* ══════════════════════════════════════════════
+   WIDGET MORPH CANVAS
+   (eyes keep their original .eye styling & idle look;
+   this layer only fades content INTO the merged eye shape
+   once JS has animated the eyes together via inline transforms)
+══════════════════════════════════════════════ */
+.face{position:relative}
+#eyeWidgetCanvas{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:0;height:0;overflow:hidden;
+  background:#fff;border-radius:var(--eye-r);
+  box-shadow:0 16px 48px rgba(0,0,0,.25),0 4px 16px rgba(0,0,0,.15);
+  opacity:0;pointer-events:none;
+  transition:width 340ms cubic-bezier(.25,.46,.45,.94),height 340ms cubic-bezier(.25,.46,.45,.94),
+             border-radius 340ms cubic-bezier(.25,.46,.45,.94),opacity 220ms ease;
+  z-index:6;
+}
+#eyeWidgetCanvas.open{opacity:1;pointer-events:all}
+#eyeWidgetCanvas .wc-inner{
+  opacity:0;transition:opacity 260ms ease 120ms;width:100%;height:100%;
+  display:flex;flex-direction:column;color:var(--blue-dark);overflow:auto;
+}
+#eyeWidgetCanvas.content-in .wc-inner{opacity:1}
+#eyeWidgetCanvas .wc-inner::-webkit-scrollbar{width:4px}
+#eyeWidgetCanvas .wc-inner::-webkit-scrollbar-thumb{background:rgba(0,80,180,.2);border-radius:4px}
+.wc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;flex-shrink:0}
+.wc-title{font-weight:800;font-size:14px;color:var(--blue-dark);display:flex;align-items:center;gap:6px}
+.wc-close{background:rgba(0,80,180,.08);border:none;color:var(--blue-dark);width:24px;height:24px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wc-close:hover{background:rgba(0,80,180,.16)}
+.wc-close svg{width:13px;height:13px;fill:currentColor}
+.wc-body{padding:4px 16px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
+
+/* weather widget */
+.wgt-weather-main{display:flex;align-items:center;gap:14px}
+.wgt-weather-temp{font-size:34px;font-weight:800;color:var(--blue-dark)}
+.wgt-weather-desc{font-size:12.5px;color:#5b7fa6}
+.wgt-weather-loc{font-size:12px;color:#7d97b8;margin-top:2px}
+.wgt-weather-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.wgt-weather-chip{background:rgba(0,80,180,.06);border-radius:10px;padding:6px 4px;text-align:center}
+.wgt-weather-chip .k{font-size:9.5px;text-transform:uppercase;color:#7d97b8;letter-spacing:.05em}
+.wgt-weather-chip .v{font-size:13px;font-weight:700;color:var(--blue-dark);margin-top:1px}
+
+/* music widget */
+.wgt-music-art{width:100%;aspect-ratio:2.4/1;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--blue-deeper));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
+.wgt-music-art svg{width:34px;height:34px;fill:#fff;opacity:.85}
+.wgt-music-title{font-weight:700;font-size:13.5px;color:var(--blue-dark);margin-top:8px}
+.wgt-music-sub{font-size:11.5px;color:#7d97b8}
+.wgt-music-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:8px}
+.wgt-music-btn{background:var(--blue-dark);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.wgt-music-btn.small{width:28px;height:28px;background:rgba(0,80,180,.1);color:var(--blue-dark)}
+.wgt-music-btn svg{width:16px;height:16px;fill:currentColor}
+.wgt-music-seek{width:100%;accent-color:var(--blue-dark);margin-top:6px}
+.wgt-music-time{display:flex;justify-content:space-between;font-size:10.5px;color:#7d97b8}
+
+/* dynamic widget */
+.wgt-dyn-field{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px solid rgba(0,80,180,.08)}
+.wgt-dyn-field .fk{color:#5b7fa6}
+.wgt-dyn-field .fv{font-weight:700;color:var(--blue-dark);text-align:right}
+.wgt-dyn-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.wgt-dyn-btn{background:var(--blue-dark);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.wgt-dyn-btn:hover{background:var(--blue-deeper)}
+
+/* hardware widget (camera / screen share preview) */
+.wgt-hw-video{width:100%;border-radius:12px;background:#000;aspect-ratio:16/10;object-fit:cover}
+.wgt-hw-stop{margin-top:8px;background:rgba(255,70,70,.9);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;align-self:center}
+
+/* topbar hardware/pip buttons */
+.hw-active{color:#7CFC9A!important}
+#pipBtn.pip-active{background:rgba(124,252,154,.18);border-color:rgba(124,252,154,.4);color:#a8ffc0}
+
+/* settings extras */
+.set-row{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--w80)}
+.set-row .set-label{font-weight:600;color:#fff}
+.set-row .set-sub{font-size:12px;color:var(--w60);margin-top:2px}
+.set-select,.set-input{width:100%;background:var(--w10);border:1px solid var(--w20);color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none}
+.set-select option{background:var(--blue-dark);color:#fff}
+.set-input::placeholder{color:var(--w60)}
+.set-group{display:flex;flex-direction:column;gap:6px}
+.set-group-label{font-size:12px;font-weight:600;color:var(--w80)}
+
+/* PiP mode adjustments (styles copied into the floating doc) */
+body.ozo-pip{background:var(--blue);height:100vh;width:100vw;overflow:hidden;display:flex;flex-direction:column}
+body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
 </style>
 </head>
 <body>
@@ -300,6 +385,10 @@ body.minimode #scrollBtn{display:none!important}
           <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </button>
         <div class="tb-right">
+          <button class="top-btn" id="pipBtn" title="Pop out into Picture-in-Picture">
+            <svg viewBox="0 0 24 24"><path d="M19 7H9c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 8H9V9h10v6zM3 5h12V3H3c-1.1 0-2 .9-2 2v12h2V5z"/></svg>
+            PiP
+          </button>
           <button class="top-btn" id="settingsBtn">
             <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54a7.02 7.02 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.02 7.02 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
             Settings
@@ -318,6 +407,7 @@ body.minimode #scrollBtn{display:none!important}
       <div class="face" aria-hidden="true">
         <div class="eye" id="leftEye"></div>
         <div class="eye" id="rightEye"></div>
+        <div id="eyeWidgetCanvas"><div class="wc-inner" id="wcInner"></div></div>
       </div>
       <div id="statusBar">Idle</div>
       <div id="jxoQuery"></div>
@@ -371,21 +461,86 @@ body.minimode #scrollBtn{display:none!important}
 
 <!-- SETTINGS MODAL -->
 <div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:101;opacity:0;pointer-events:none;transition:opacity .18s">
-  <div id="settingsModal" style="background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(340px,92vw);transform:scale(.96);transition:transform .18s">
+  <div id="settingsModal" style="background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(380px,92vw);max-height:86vh;overflow-y:auto;transform:scale(.96);transition:transform .18s">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <h3 style="font-size:15px;font-weight:700;color:#fff">Settings</h3>
       <button id="settingsClose" style="background:none;border:none;cursor:pointer;color:var(--w60);padding:4px;border-radius:6px;display:flex" title="Close">
         <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
       </button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--w80)">
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <div class="set-row">
         <div>
-          <div style="font-weight:600;color:#fff">Smart Intent</div>
-          <div style="font-size:12px;color:var(--w60);margin-top:2px">Detect when you want to open sites or search</div>
+          <div class="set-label">Smart Intent</div>
+          <div class="set-sub">Detect when you want to open sites or search</div>
         </div>
         <div class="toggle on" id="intentTogglePerm" title="Enable/disable smart intent globally" style="flex-shrink:0;margin-left:14px"></div>
       </div>
+
+      <div style="height:1px;background:var(--w15)"></div>
+
+      <div class="set-group-label">Model &amp; API</div>
+      <div class="set-group">
+        <label class="set-sub" for="modelSelect">Model (OpenRouter)</label>
+        <select class="set-select" id="modelSelect">
+          <option value="nvidia/nemotron-3.5-lightning:free">nvidia/nemotron-3.5-lightning:free</option>
+          <option value="google/gemma-4-26b-a4b:free">google/gemma-4-26b-a4b:free</option>
+          <option value="thm/glm-5.2:free">thm/glm-5.2:free</option>
+        </select>
+      </div>
+      <div class="set-group">
+        <label class="set-sub" for="apiKeyInput">Custom OpenRouter API Key <span style="opacity:.7">(optional)</span></label>
+        <input class="set-input" id="apiKeyInput" type="password" placeholder="sk-or-v1-…" autocomplete="off"/>
+      </div>
+
+      <div style="height:1px;background:var(--w15)"></div>
+
+      <div class="set-group-label">Engine</div>
+      <div class="set-row">
+        <div>
+          <div class="set-label">Offline Mode</div>
+          <div class="set-sub">Use Chrome's built-in AI (window.ai) instead of OpenRouter</div>
+        </div>
+        <div class="toggle" id="toggleOffline" style="flex-shrink:0;margin-left:14px"></div>
+      </div>
+
+      <div style="height:1px;background:var(--w15)"></div>
+
+      <div class="set-group-label">Hardware</div>
+      <div class="set-row">
+        <div>
+          <div class="set-label">Camera</div>
+          <div class="set-sub">Allow Ozo to request camera capture</div>
+        </div>
+        <div class="toggle" id="toggleCamera" style="flex-shrink:0;margin-left:14px"></div>
+      </div>
+      <div class="set-row">
+        <div>
+          <div class="set-label">Screen Share</div>
+          <div class="set-sub">Allow Ozo to request your screen</div>
+        </div>
+        <div class="toggle" id="toggleScreen" style="flex-shrink:0;margin-left:14px"></div>
+      </div>
+      <div class="set-row">
+        <div>
+          <div class="set-label">Browser Notifications</div>
+          <div class="set-sub">Let Ozo alert you when you're on another tab</div>
+        </div>
+        <div class="toggle" id="toggleNotif" style="flex-shrink:0;margin-left:14px"></div>
+      </div>
+
+      <div style="height:1px;background:var(--w15)"></div>
+
+      <div class="set-group-label">Layout</div>
+      <div class="set-row">
+        <div>
+          <div class="set-label">Auto-launch Picture-in-Picture</div>
+          <div class="set-sub">Pop Ozo into a floating window automatically</div>
+        </div>
+        <div class="toggle" id="togglePip" style="flex-shrink:0;margin-left:14px"></div>
+      </div>
+
       <div style="height:1px;background:var(--w15)"></div>
       <div style="font-size:12px;color:var(--w60);text-align:center">
         Ozo by Jxo &middot; powered by <a href="https://openrouter.ai" target="_blank" style="color:var(--w60)">OpenRouter</a>
@@ -410,10 +565,18 @@ body.minimode #scrollBtn{display:none!important}
    CONFIG
 ══════════════════════════════════════════════ */
 const KEYS_URL = 'https://jxoj.github.io/Ozo/keys.json';
-const MODEL = 'google/gemini-2.0-flash-001';
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const ALLOWED_MODELS = [
+  'nvidia/nemotron-3.5-lightning:free',
+  'google/gemma-4-26b-a4b:free',
+  'thm/glm-5.2:free'
+];
 
-let API_KEY = '';
+let API_KEY = '';           // fallback key fetched from keys.json
+let CUSTOM_API_KEY = localStorage.getItem('ozo_custom_key') || '';
+let SELECTED_MODEL = localStorage.getItem('ozo_model') || ALLOWED_MODELS[0];
+
+function effectiveApiKey(){ return CUSTOM_API_KEY || API_KEY; }
 
 async function loadKey() {
   try {
@@ -425,28 +588,74 @@ async function loadKey() {
     API_KEY = keys[Math.floor(Math.random() * keys.length)];
   } catch (e) {
     console.error('Key load error:', e);
-    // Show error in UI
-    document.getElementById('loadingScreen').innerHTML =
-      '<p style="color:#ffb3b3;font-size:14px;text-align:center;padding:20px">Failed to load API keys.<br>Check that keys.json is accessible.</p>';
-    throw e;
+    // Only fatal if the user hasn't supplied their own key and isn't offline
+    if (!CUSTOM_API_KEY && !SETTINGS.offline) {
+      document.getElementById('loadingScreen').innerHTML =
+        '<p style="color:#ffb3b3;font-size:14px;text-align:center;padding:20px">Failed to load API keys.<br>Check that keys.json is accessible, or add a custom key in Settings.</p>';
+      throw e;
+    }
   }
 }
 
-const SYSTEM_PROMPT=`You are Ozo, an AI assistant made by Jxo. You are friendly, concise, and helpful.
-Use markdown for formatting when it helps (lists, code blocks, headers, etc).
-You have expressive animated eyes that react to emotions.
+/* ── PERSISTED FEATURE SETTINGS ── */
+const SETTINGS = Object.assign({
+  camera:false, screen:false, notif:false, pip:false, offline:false
+}, JSON.parse(localStorage.getItem('ozo_settings')||'{}'));
+function saveSettings(){localStorage.setItem('ozo_settings',JSON.stringify(SETTINGS));}
 
-EMOTION SIGNALS — you can embed these anywhere in your response to move your eyes.
-They will be stripped before display. Use them naturally to express how you feel:
-[OZO:HAPPY]    — upward bright look, slight grow
-[OZO:SAD]      — downward droopy look
-[OZO:SURPRISE] — wide eyes, big scale
-[OZO:THINK]    — side glance left
-[OZO:EXCITED]  — rapid movement, bigger
-[OZO:CURIOUS]  — tilt, look slightly up-left
-[OZO:NEUTRAL]  — return to center
+/* Builds the capability context injected into the system prompt so the
+   model only ever requests hardware/features the user has actually
+   enabled beforehand. */
+function capabilityContext(){
+  const lines=[];
+  lines.push(SETTINGS.camera   ? '- Camera capture is ENABLED — you may request it.' : '- Camera capture is DISABLED — never request it.');
+  lines.push(SETTINGS.screen   ? '- Screen sharing is ENABLED — you may request it.' : '- Screen sharing is DISABLED — never request it.');
+  lines.push(SETTINGS.notif    ? '- Browser notifications are ENABLED — you may send them.' : '- Browser notifications are DISABLED — never send them.');
+  lines.push(SETTINGS.pip      ? '- Document Picture-in-Picture is ENABLED (auto-launch on).' : '- Document Picture-in-Picture is available on request but not auto-launching.');
+  lines.push(SETTINGS.offline  ? "- Running in OFFLINE mode via the browser's on-device model." : '- Running ONLINE via OpenRouter.');
+  return lines.join('\n');
+}
 
-Example: "That's a great question! [OZO:CURIOUS] Let me think about that... [OZO:THINK] Here's what I found:"`;
+/* Unified, strict JSON response schema. No hardcoded trigger phrases —
+   the model infers speech/emotion/widget/hardware/navigation purely from
+   the conversation. */
+function buildSystemPrompt(){
+return `You are Ozo, an AI assistant made by Jxo, embodied as a pair of white rounded-rectangle eyes on screen.
+You are friendly, concise, and helpful. You NEVER see literal trigger keywords — you infer what the user wants from natural conversation and decide the best response yourself.
+
+CURRENT CAPABILITIES (only act within these):
+${capabilityContext()}
+
+You must respond with ONLY a single valid JSON object — no markdown fences, no prose outside it — matching exactly this schema:
+{
+  "speech": "The natural language reply to show/speak to the user. Markdown allowed.",
+  "emotion": "neutral | happy | thinking | surprised | focusing",
+  "widget": {
+    "type": "none | weather | music | dynamic",
+    "action": "open | close | update",
+    "data": {}
+  },
+  "hardware_request": {
+    "type": "none | camera | screen_share | notification",
+    "action": "activate | capture"
+  },
+  "navigation": {
+    "type": "none | open_url | search",
+    "url": "",
+    "query": "",
+    "label": ""
+  }
+}
+
+Guidance:
+- widget.type="weather": data should include location, tempC, tempF, condition, high, low, humidity.
+- widget.type="music": data should include title, artist, trackUrl (a direct playable audio URL if you have one, else omit), action open/update/close controls playback state via "playing": true/false.
+- widget.type="dynamic": for anything else worth a small visual card. data = { title, fields:[{label,value}], actions:[{label}] }.
+- Only set widget.action="open" the first time you introduce a widget in a turn; use "update" to modify an already-open widget; use "close" plus type of the currently open widget to dismiss it.
+- Only request hardware_request when the capability above is ENABLED, and only when the user's message genuinely implies wanting it (e.g. wanting to show you something, wanting a visual on-screen alert). If disabled, always return "none" and instead explain in speech that the feature is off in Settings.
+- navigation.type="open_url" for a direct, unambiguous command to open a specific website. "search" for a request to search the web. Otherwise "none". Be conservative — when in doubt, "none".
+- Keep "speech" natural; do not mention this JSON schema to the user.`;
+}
 
 /* ══════════════════════════════════════════════
    URL PARAMS
@@ -471,6 +680,17 @@ const modalOverlay=$('modalOverlay');
 const scrollBtn=$('scrollBtn');
 const intentToggleBtn=$('intentToggleBtn');
 const intentTogglePerm=$('intentTogglePerm');
+const modelSelect=$('modelSelect');
+const apiKeyInput=$('apiKeyInput');
+const toggleOffline=$('toggleOffline');
+const toggleCamera=$('toggleCamera');
+const toggleScreen=$('toggleScreen');
+const toggleNotif=$('toggleNotif');
+const togglePip=$('togglePip');
+const pipBtn=$('pipBtn');
+const eyeWidgetCanvas=$('eyeWidgetCanvas');
+const wcInner=$('wcInner');
+const faceEl=document.querySelector('.face');
 
 /* ══════════════════════════════════════════════
    STATE
@@ -643,6 +863,313 @@ intentTogglePerm.addEventListener('click',()=>{
   intentPermEnabled=!intentPermEnabled;
   localStorage.setItem('ozo_intent_perm',JSON.stringify(intentPermEnabled));
   intentOneOff=false;updateIntentUI();
+});
+
+/* ══════════════════════════════════════════════
+   MODEL / KEY / FEATURE SETTINGS UI
+══════════════════════════════════════════════ */
+function toggleEl(el,on){el.classList.toggle('on',on);}
+
+function initSettingsUI(){
+  // Model select
+  modelSelect.value=ALLOWED_MODELS.includes(SELECTED_MODEL)?SELECTED_MODEL:ALLOWED_MODELS[0];
+  modelSelect.addEventListener('change',()=>{
+    SELECTED_MODEL=modelSelect.value;localStorage.setItem('ozo_model',SELECTED_MODEL);showToast('Model set to '+SELECTED_MODEL);
+  });
+  // API key
+  apiKeyInput.value=CUSTOM_API_KEY;
+  apiKeyInput.addEventListener('change',()=>{
+    CUSTOM_API_KEY=apiKeyInput.value.trim();localStorage.setItem('ozo_custom_key',CUSTOM_API_KEY);
+    showToast(CUSTOM_API_KEY?'Custom API key saved.':'Custom key cleared — using shared key.');
+  });
+  // Toggles
+  toggleEl(toggleOffline,SETTINGS.offline);
+  toggleEl(toggleCamera,SETTINGS.camera);
+  toggleEl(toggleScreen,SETTINGS.screen);
+  toggleEl(toggleNotif,SETTINGS.notif);
+  toggleEl(togglePip,SETTINGS.pip);
+
+  toggleOffline.addEventListener('click',()=>{SETTINGS.offline=!SETTINGS.offline;toggleEl(toggleOffline,SETTINGS.offline);saveSettings();showToast('Offline mode '+(SETTINGS.offline?'on':'off'));});
+  toggleCamera.addEventListener('click',()=>{SETTINGS.camera=!SETTINGS.camera;toggleEl(toggleCamera,SETTINGS.camera);saveSettings();if(!SETTINGS.camera)stopHardwareStream('camera');});
+  toggleScreen.addEventListener('click',()=>{SETTINGS.screen=!SETTINGS.screen;toggleEl(toggleScreen,SETTINGS.screen);saveSettings();if(!SETTINGS.screen)stopHardwareStream('screen_share');});
+  toggleNotif.addEventListener('click',async()=>{
+    SETTINGS.notif=!SETTINGS.notif;
+    if(SETTINGS.notif&&'Notification'in window&&Notification.permission==='default'){try{await Notification.requestPermission();}catch{}}
+    toggleEl(toggleNotif,SETTINGS.notif);saveSettings();
+  });
+  togglePip.addEventListener('click',()=>{SETTINGS.pip=!SETTINGS.pip;toggleEl(togglePip,SETTINGS.pip);saveSettings();showToast('Auto-launch PiP '+(SETTINGS.pip?'on':'off'));});
+}
+
+/* ══════════════════════════════════════════════
+   EYE → WIDGET MORPH ENGINE
+   (base .eye CSS is untouched; morphing is purely additive
+   inline-transform work layered on top of the existing look)
+══════════════════════════════════════════════ */
+let widgetOpen=false;
+let currentWidget=null; // {type,data}
+let hwStreams={camera:null,screen_share:null};
+
+function faceBounds(){
+  const r=faceEl.getBoundingClientRect();
+  return {w:r.width,h:r.height};
+}
+
+function morphEyesTogether(on){
+  const eyeW=getComputedStyle(document.documentElement).getPropertyValue('--eye-w').trim();
+  const eyeH=getComputedStyle(document.documentElement).getPropertyValue('--eye-h').trim();
+  const gap=getComputedStyle(document.documentElement).getPropertyValue('--eye-gap').trim();
+  if(on){
+    // Slide the eyes together, flattening their inner corners so they read as one shape
+    leftEye.style.transition='transform 340ms cubic-bezier(.25,.46,.45,.94),border-radius 340ms ease';
+    rightEye.style.transition='transform 340ms cubic-bezier(.25,.46,.45,.94),border-radius 340ms ease';
+    const shift=(parseFloat(gap)/2)+parseFloat(eyeW)/2;
+    leftEye.style.transform=`translateX(${shift}px)`;
+    rightEye.style.transform=`translateX(${-shift}px)`;
+    leftEye.style.borderTopRightRadius='4px';leftEye.style.borderBottomRightRadius='4px';
+    rightEye.style.borderTopLeftRadius='4px';rightEye.style.borderBottomLeftRadius='4px';
+    eyeWidgetCanvas.style.width=(parseFloat(eyeW)*2+parseFloat(gap))+'px';
+    eyeWidgetCanvas.style.height=(parseFloat(eyeH))+'px';
+    eyeWidgetCanvas.classList.add('open');
+    setTimeout(()=>eyeWidgetCanvas.classList.add('content-in'),260);
+  }else{
+    eyeWidgetCanvas.classList.remove('content-in','open');
+    leftEye.style.transform='';rightEye.style.transform='';
+    leftEye.style.borderTopRightRadius='';leftEye.style.borderBottomRightRadius='';
+    rightEye.style.borderTopLeftRadius='';rightEye.style.borderBottomLeftRadius='';
+    setTimeout(()=>{eyeWidgetCanvas.style.width='0';eyeWidgetCanvas.style.height='0';},240);
+  }
+}
+
+function closeWidget(){
+  if(!widgetOpen)return;
+  widgetOpen=false;currentWidget=null;
+  morphEyesTogether(false);
+  wcInner.innerHTML='';
+  stopHardwareStream('camera');stopHardwareStream('screen_share');
+  if(musicAudio){musicAudio.pause();}
+}
+
+function openOrUpdateWidget(widget){
+  if(!widget||widget.type==='none'){return;}
+  if(widget.action==='close'){closeWidget();return;}
+  currentWidget=widget;
+  if(!widgetOpen){widgetOpen=true;morphEyesTogether(true);}
+  renderWidget(widget);
+  OzoMCP.emit('widget:state',{type:widget.type,data:widget.data});
+}
+
+function widgetHeaderHtml(title,iconSvg){
+  return `<div class="wc-header"><div class="wc-title">${iconSvg||''}${title}</div><button class="wc-close" id="wcCloseBtn" title="Close">
+    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button></div>`;
+}
+function wireWidgetClose(){$('wcCloseBtn')?.addEventListener('click',()=>{closeWidget();});}
+
+function renderWidget(widget){
+  const d=widget.data||{};
+  if(widget.type==='weather')return renderWeatherWidget(d);
+  if(widget.type==='music')return renderMusicWidget(d);
+  if(widget.type==='dynamic')return renderDynamicWidget(d);
+  if(widget.type==='camera'||widget.type==='screen_share')return renderHardwareWidget(widget.type,d);
+}
+
+function renderWeatherWidget(d){
+  wcInner.innerHTML=`
+    ${widgetHeaderHtml(d.location||'Weather',`<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>`)}
+    <div class="wc-body">
+      <div class="wgt-weather-main">
+        <div>
+          <div class="wgt-weather-temp">${d.tempF??d.tempC??'--'}${d.tempF!=null?'°F':d.tempC!=null?'°C':''}</div>
+          <div class="wgt-weather-desc">${d.condition||''}</div>
+        </div>
+      </div>
+      <div class="wgt-weather-loc">${d.location||''}</div>
+      <div class="wgt-weather-grid">
+        <div class="wgt-weather-chip"><div class="k">High</div><div class="v">${d.high??'--'}</div></div>
+        <div class="wgt-weather-chip"><div class="k">Low</div><div class="v">${d.low??'--'}</div></div>
+        <div class="wgt-weather-chip"><div class="k">Humidity</div><div class="v">${d.humidity??'--'}${d.humidity!=null?'%':''}</div></div>
+      </div>
+    </div>`;
+  wireWidgetClose();
+}
+
+let musicAudio=null;
+function renderMusicWidget(d){
+  wcInner.innerHTML=`
+    ${widgetHeaderHtml('Now Playing')}
+    <div class="wc-body">
+      <div class="wgt-music-art"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>
+      <div class="wgt-music-title">${d.title||'Untitled track'}</div>
+      <div class="wgt-music-sub">${d.artist||''}</div>
+      <div class="wgt-music-controls">
+        <button class="wgt-music-btn small" id="wgtMPrev"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+        <button class="wgt-music-btn" id="wgtMPlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+        <button class="wgt-music-btn small" id="wgtMNext"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+      </div>
+      <input type="range" class="wgt-music-seek" id="wgtMSeek" min="0" max="100" value="0"/>
+      <div class="wgt-music-time"><span id="wgtMCur">0:00</span><span id="wgtMDur">0:00</span></div>
+    </div>`;
+  wireWidgetClose();
+  if(!musicAudio){musicAudio=new Audio();musicAudio.crossOrigin='anonymous';}
+  const src=d.trackUrl||'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+  if(musicAudio.src!==src){musicAudio.src=src;}
+  const playBtn=$('wgtMPlay'),seek=$('wgtMSeek'),cur=$('wgtMCur'),dur=$('wgtMDur');
+  const fmt=s=>{if(!isFinite(s))return'0:00';const m=Math.floor(s/60),ss=Math.floor(s%60);return m+':'+String(ss).padStart(2,'0');};
+  function setPlayIcon(playing){playBtn.innerHTML=playing?'<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';}
+  const wantsPlay=d.playing!==false;
+  playBtn.addEventListener('click',()=>{
+    if(musicAudio.paused){musicAudio.play().catch(()=>{});setPlayIcon(true);OzoMCP.emit('music:play',{title:d.title});}
+    else{musicAudio.pause();setPlayIcon(false);OzoMCP.emit('music:pause',{title:d.title});}
+  });
+  $('wgtMPrev').addEventListener('click',()=>OzoMCP.emit('music:prev',{}));
+  $('wgtMNext').addEventListener('click',()=>OzoMCP.emit('music:next',{}));
+  musicAudio.ontimeupdate=()=>{if(musicAudio.duration){seek.value=(musicAudio.currentTime/musicAudio.duration)*100;cur.textContent=fmt(musicAudio.currentTime);dur.textContent=fmt(musicAudio.duration);}};
+  seek.addEventListener('input',()=>{if(musicAudio.duration)musicAudio.currentTime=(seek.value/100)*musicAudio.duration;});
+  if(wantsPlay){musicAudio.play().then(()=>setPlayIcon(true)).catch(()=>setPlayIcon(false));}else{setPlayIcon(false);}
+}
+
+function renderDynamicWidget(d){
+  const fields=(d.fields||[]).map(f=>`<div class="wgt-dyn-field"><span class="fk">${f.label}</span><span class="fv">${f.value}</span></div>`).join('');
+  const actions=(d.actions||[]).map((a,i)=>`<button class="wgt-dyn-btn" data-act="${i}">${a.label}</button>`).join('');
+  wcInner.innerHTML=`
+    ${widgetHeaderHtml(d.title||'Ozo')}
+    <div class="wc-body">
+      ${d.description?`<div style="font-size:12.5px;color:#5b7fa6">${d.description}</div>`:''}
+      ${fields}
+      <div class="wgt-dyn-actions">${actions}</div>
+    </div>`;
+  wireWidgetClose();
+  wcInner.querySelectorAll('.wgt-dyn-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const a=(d.actions||[])[+btn.dataset.act];
+      if(a)OzoMCP.emit('widget:action',{label:a.label,title:d.title});
+    });
+  });
+}
+
+function renderHardwareWidget(type,d){
+  const label=type==='camera'?'Camera':'Screen Share';
+  wcInner.innerHTML=`
+    ${widgetHeaderHtml(label)}
+    <div class="wc-body">
+      <video id="hwVideo" class="wgt-hw-video" autoplay muted playsinline></video>
+      <button class="wgt-hw-stop" id="hwStopBtn">Stop ${label}</button>
+    </div>`;
+  wireWidgetClose();
+  const video=$('hwVideo');
+  const stream=hwStreams[type];
+  if(stream)video.srcObject=stream;
+  $('hwStopBtn').addEventListener('click',()=>{stopHardwareStream(type);closeWidget();});
+}
+
+/* ══════════════════════════════════════════════
+   WEB MCP / EVENT BRIDGE
+   Lets widget interactions flow back into the model's context, and lets
+   the model's client-side effects trigger DOM/JS actions programmatically.
+══════════════════════════════════════════════ */
+const OzoMCP=(()=>{
+  const listeners={};
+  function on(evt,fn){(listeners[evt]=listeners[evt]||[]).push(fn);}
+  function emit(evt,payload){
+    (listeners[evt]||[]).forEach(fn=>{try{fn(payload);}catch(e){console.error('MCP handler error',e);}});
+    // Feed the interaction back into the conversation's context silently,
+    // so the next model turn is aware of what happened in the widget.
+    pendingContextEvents.push({evt,payload,ts:Date.now()});
+  }
+  return{on,emit};
+})();
+let pendingContextEvents=[];
+function drainContextEvents(){
+  if(!pendingContextEvents.length)return'';
+  const s=pendingContextEvents.map(e=>`[event] ${e.evt} ${JSON.stringify(e.payload)}`).join('\n');
+  pendingContextEvents=[];
+  return `\n\n(Recent widget/client events for context:\n${s}\n)`;
+}
+
+/* ══════════════════════════════════════════════
+   HARDWARE CONTROLLERS
+══════════════════════════════════════════════ */
+async function requestCamera(){
+  if(!SETTINGS.camera){showToast('Camera is off in Settings.');return;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true});
+    hwStreams.camera=stream;
+    openOrUpdateWidget({type:'camera',action:'open',data:{}});
+  }catch(e){console.error(e);showToast('Camera access denied.');}
+}
+async function requestScreenShare(){
+  if(!SETTINGS.screen){showToast('Screen share is off in Settings.');return;}
+  try{
+    const stream=await navigator.mediaDevices.getDisplayMedia({video:true});
+    hwStreams.screen_share=stream;
+    openOrUpdateWidget({type:'screen_share',action:'open',data:{}});
+    stream.getVideoTracks()[0].addEventListener('ended',()=>{stopHardwareStream('screen_share');closeWidget();});
+  }catch(e){console.error(e);showToast('Screen share cancelled.');}
+}
+function stopHardwareStream(type){
+  const s=hwStreams[type];
+  if(s){s.getTracks().forEach(t=>t.stop());hwStreams[type]=null;}
+}
+function sendOzoNotification(title,body){
+  if(!SETTINGS.notif){return;}
+  if(!('Notification'in window)){showToast(title+': '+body);return;}
+  if(Notification.permission==='granted'){
+    if(document.visibilityState!=='visible')new Notification(title,{body});
+  }else if(Notification.permission!=='denied'){
+    Notification.requestPermission().then(p=>{if(p==='granted'&&document.visibilityState!=='visible')new Notification(title,{body});});
+  }
+}
+function handleHardwareRequest(hw){
+  if(!hw||hw.type==='none')return;
+  if(hw.type==='camera')requestCamera();
+  else if(hw.type==='screen_share')requestScreenShare();
+  else if(hw.type==='notification')sendOzoNotification('Ozo',stripSignals(lastSpeechForNotif||'').slice(0,120));
+}
+
+/* ══════════════════════════════════════════════
+   DOCUMENT PICTURE-IN-PICTURE
+══════════════════════════════════════════════ */
+let pipWindow=null;
+async function enterDocPiP(){
+  if(!('documentPictureInPicture'in window)){showToast('Picture-in-Picture not supported in this browser.');return;}
+  if(pipWindow){return;}
+  try{
+    pipWindow=await window.documentPictureInPicture.requestWindow({width:340,height:420});
+    [...document.styleSheets].forEach(sheet=>{
+      try{
+        const css=[...sheet.cssRules].map(r=>r.cssText).join('\n');
+        const style=pipWindow.document.createElement('style');style.textContent=css;pipWindow.document.head.appendChild(style);
+      }catch(e){
+        if(sheet.href){const link=pipWindow.document.createElement('link');link.rel='stylesheet';link.href=sheet.href;pipWindow.document.head.appendChild(link);}
+      }
+    });
+    pipWindow.document.body.style.margin='0';
+    pipWindow.document.body.classList.add('ozo-pip');
+
+    const pipRoot=document.createElement('div');pipRoot.id='pipRoot';
+    const faceZoneClone=$('faceZone');
+    const inputBarClone=$('inputBar');
+    // Move (not clone) the live nodes so state/listeners keep working
+    pipRoot.appendChild(faceZoneClone);
+    const chatMini=document.createElement('div');chatMini.style.cssText='flex:1;overflow-y:auto;';
+    chatMini.appendChild($('chatWrap'));
+    pipRoot.appendChild(chatMini);
+    pipRoot.appendChild(inputBarClone);
+    pipWindow.document.body.appendChild(pipRoot);
+
+    pipBtn.classList.add('pip-active');
+    pipWindow.addEventListener('pagehide',()=>{
+      // Move everything back into the main document
+      const main=$('main');
+      main.insertBefore(faceZoneClone,main.firstChild);
+      main.insertBefore(chatMini.firstChild,$('inputBar'));
+      main.appendChild(inputBarClone);
+      pipBtn.classList.remove('pip-active');
+      pipWindow=null;
+    });
+  }catch(e){console.error('PiP error',e);showToast('Could not open Picture-in-Picture.');pipWindow=null;}
+}
+pipBtn.addEventListener('click',()=>{
+  if(pipWindow){pipWindow.close();}else{enterDocPiP();}
 });
 
 /* ══════════════════════════════════════════════
@@ -821,17 +1348,40 @@ function processSignalsInChunk(chunk){
 }
 
 /* ══════════════════════════════════════════════
-   OPENROUTER
+   OPENROUTER / OFFLINE MODEL CALL LAYER
 ══════════════════════════════════════════════ */
 function getHeaders(){
-  return {'Content-Type':'application/json','Authorization':`Bearer ${API_KEY}`,'HTTP-Referer':window.location.href,'X-Title':'Ozo'};
+  return {'Content-Type':'application/json','Authorization':`Bearer ${effectiveApiKey()}`,'HTTP-Referer':window.location.href,'X-Title':'Ozo'};
 }
 
-async function callJSON(messages){
-  const r=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({model:MODEL,stream:false,messages})});
+/* Non-streaming JSON-object call against OpenRouter, forcing the model
+   to return the strict Ozo response schema. */
+async function callOpenRouterJSON(messages){
+  const r=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({
+    model:SELECTED_MODEL,stream:false,response_format:{type:'json_object'},messages
+  })});
   if(!r.ok)throw new Error(`HTTP ${r.status}`);
   return(await r.json())?.choices?.[0]?.message?.content??'';
 }
+
+/* Chrome's on-device model (window.ai), used when Offline Mode is on.
+   No network traffic leaves the browser. */
+async function callOfflineModel(messages){
+  if(!('ai'in window)||typeof window.ai?.createTextSession!=='function'){
+    throw new Error('window.ai is not available in this browser.');
+  }
+  const session=await window.ai.createTextSession();
+  const sys=messages.find(m=>m.role==='system')?.content||'';
+  const rest=messages.filter(m=>m.role!=='system').map(m=>`${m.role}: ${m.content}`).join('\n');
+  const result=await session.prompt(`${sys}\n\n${rest}\n\nassistant:`);
+  session.destroy?.();
+  return result;
+}
+
+async function callModel(messages){
+  return SETTINGS.offline ? callOfflineModel(messages) : callOpenRouterJSON(messages);
+}
+
 function extractDelta(line){
   const raw=line.replace(/^data:\s*/,'').trim();
   if(!raw||raw==='[DONE]')return null;
@@ -839,87 +1389,49 @@ function extractDelta(line){
 }
 
 /* ══════════════════════════════════════════════
-   INTENT DETECTION
+   UNIFIED TURN — one model call, one strict JSON schema
+   drives speech + emotion + widget morph + hardware + navigation
 ══════════════════════════════════════════════ */
-const INTENT_SYSTEM=`You are an intent classifier for Ozo.
-Return ONLY valid JSON, nothing else.
-
-Actions:
-1. open_url  – direct command to open a website: {"action":"open_url","url":"https://...","label":"Name"}
-2. search    – command to search Google: {"action":"search","query":"...","label":"Search: ..."}
-3. open_search – command to open a platform search URL: {"action":"open_search","url":"https://...","label":"..."}
-4. chat      – everything else: {"action":"chat"}
-
-CRITICAL: Only trigger non-chat for unambiguous direct commands TO Ozo. When in doubt → chat.
-Never output anything outside the JSON.`;
-
-async function detectIntent(text){
-  try{const r=await callJSON([{role:'system',content:INTENT_SYSTEM},{role:'user',content:text}]);return JSON.parse(r.replace(/```[a-z]*\n?/gi,'').trim());}
-  catch(e){console.warn('Intent fail',e);return{action:'chat'};}
-}
-
-/* ══════════════════════════════════════════════
-   STREAMING REPLY
-══════════════════════════════════════════════ */
-async function streamReply(userText){
-  const s=getSession(currentChatId);
-  const messages=[{role:'system',content:SYSTEM_PROMPT},...(s?.history||[]),{role:'user',content:userText}];
-  addTypingIndicator();statusEl.textContent='Streaming…';
-  sendBtn.style.display='none';stopBtn.style.display='flex';
-  abortController=new AbortController();
-  let accumulated='';let bubble=null,row=null,acts=null;
-
-  try{
-    const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),signal:abortController.signal,body:JSON.stringify({model:MODEL,stream:true,messages})});
-    removeTypingIndicator();
-    if(!resp.ok){appendOzoBubble(`Error ${resp.status}`,false);return;}
-
-    row=document.createElement('div');row.className='msg-row ozo';
-    const wrap=document.createElement('div');wrap.className='msg-wrap';
-    const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
-    bubble=document.createElement('div');bubble.className='bubble';
-    acts=document.createElement('div');acts.className='msg-actions';
-    wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
-
-    const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
-    while(true){
-      const{done,value}=await reader.read();if(done)break;
-      buffer+=decoder.decode(value,{stream:true});
-      const lines=buffer.split(/\r?\n/);buffer=lines.pop()||'';
-      for(const line of lines){
-        if(!line.trim())continue;
-        const piece=extractDelta(line);
-        if(piece!==null){processSignalsInChunk(piece);accumulated+=piece;bubble.innerHTML=marked.parse(stripSignals(accumulated));scrollToBottom();}
-      }
-    }
-
-    addCopyCodeBtns(bubble);
-    acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(stripSignals(accumulated))));
-    acts.appendChild(makeActBtn('Regenerate',ICONS.regen,()=>{
-      row.remove();
-      const sess=getSession(currentChatId);
-      if(sess){sess.messages=sess.messages.filter((_,i,a)=>!(i===a.length-1&&a[i].role==='ozo'));upsertSession(sess);}
-      streamReply(userText);
-    }));
-    saveMsg('ozo',{text:accumulated});saveHistory(userText,accumulated);
-
-  }catch(err){
-    removeTypingIndicator();
-    if(err.name!=='AbortError'){appendOzoBubble('Stream error — check console.',false);console.error(err);}
-    else{if(accumulated&&bubble){addCopyCodeBtns(bubble);saveMsg('ozo',{text:accumulated});saveHistory(userText,accumulated);}showToast('Stopped.');}
-  }finally{
-    sendBtn.style.display='flex';stopBtn.style.display='none';
-    isStreaming=false;abortController=null;
-    intentOneOff=false;updateIntentUI();
+function mapEmotion(e){
+  switch((e||'').toLowerCase()){
+    case'happy':return'HAPPY';
+    case'thinking':return'THINK';
+    case'surprised':return'SURPRISE';
+    case'focusing':return'CURIOUS';
+    default:return'NEUTRAL';
   }
 }
 
+function parseOzoJSON(raw){
+  try{
+    const cleaned=(raw||'').replace(/```[a-z]*\n?/gi,'').replace(/```/g,'').trim();
+    const parsed=JSON.parse(cleaned);
+    return{
+      speech:parsed.speech??'',
+      emotion:parsed.emotion??'neutral',
+      widget:parsed.widget??{type:'none'},
+      hardware_request:parsed.hardware_request??{type:'none'},
+      navigation:parsed.navigation??{type:'none'}
+    };
+  }catch(e){
+    console.warn('Ozo JSON parse failed, treating as plain speech',e,raw);
+    return{speech:raw||"Sorry, I couldn't quite process that.",emotion:'neutral',widget:{type:'none'},hardware_request:{type:'none'},navigation:{type:'none'}};
+  }
+}
+
+async function getOzoTurn(userText){
+  const s=getSession(currentChatId);
+  const sys=buildSystemPrompt()+drainContextEvents();
+  const messages=[{role:'system',content:sys},...(s?.history||[]),{role:'user',content:userText}];
+  const raw=await callModel(messages);
+  return parseOzoJSON(raw);
+}
+
 /* ══════════════════════════════════════════════
-   INTENT ACTIONS
+   NAVIGATION ACTIONS (open_url / search)
 ══════════════════════════════════════════════ */
 function doOpenUrl(url,label){eyesLookUp();statusEl.textContent=`Opening ${label}…`;setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(label,url,'globe');applyEmotion('EXCITED');setTimeout(startIdle,800);},400);}
 function doSearch(q){const url=`https://www.google.com/search?q=${encodeURIComponent(q)}`;eyesLookUp();statusEl.textContent='Searching…';setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(`Search: ${q}`,url,'search');applyEmotion('CURIOUS');setTimeout(startIdle,800);},400);}
-function doOpenSearch(url,label){eyesLookUp();statusEl.textContent='Opening search…';setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(label,url,'search');applyEmotion('CURIOUS');setTimeout(startIdle,800);},400);}
 
 /* ══════════════════════════════════════════════
    EXPORT
@@ -941,20 +1453,51 @@ function exportChat(){
 /* ══════════════════════════════════════════════
    MAIN HANDLER
 ══════════════════════════════════════════════ */
+let lastSpeechForNotif='';
+
 async function handleInput(text){
   if(!text.trim()||isStreaming)return;
   sendBtn.disabled=true;isStreaming=true;textarea.style.height='auto';
   appendUserBubble(text);startThink();eyesNotice(0,6,1,300);
-  const useIntent=intentPermEnabled&&!intentOneOff;
-  let intent={action:'chat'};
-  if(useIntent)intent=await detectIntent(text);
-  switch(intent?.action){
-    case'open_url':stopWander();doOpenUrl(intent.url,intent.label||intent.url);break;
-    case'search':stopWander();doSearch(intent.query);break;
-    case'open_search':stopWander();doOpenSearch(intent.url,intent.label||'Search');break;
-    default:await streamReply(text);stopWander();startIdle();
+  addTypingIndicator();statusEl.textContent='Thinking…';
+  sendBtn.style.display='none';stopBtn.style.display='flex';
+  abortController=new AbortController();
+
+  try{
+    const turn=await getOzoTurn(text);
+    removeTypingIndicator();
+    lastSpeechForNotif=turn.speech||'';
+
+    applyEmotion(mapEmotion(turn.emotion));
+
+    if(turn.speech)appendOzoBubble(turn.speech,true);
+
+    if(turn.widget&&turn.widget.type&&turn.widget.type!=='none'){
+      openOrUpdateWidget(turn.widget);
+    }
+    if(turn.hardware_request&&turn.hardware_request.type&&turn.hardware_request.type!=='none'){
+      handleHardwareRequest(turn.hardware_request);
+    }
+    if(turn.navigation?.type==='open_url'&&turn.navigation.url){
+      doOpenUrl(turn.navigation.url,turn.navigation.label||turn.navigation.url);
+    }else if(turn.navigation?.type==='search'&&turn.navigation.query){
+      doSearch(turn.navigation.query);
+    }
+
+    saveHistory(text,turn.speech||'');
+    if(document.visibilityState!=='visible')sendOzoNotification('Ozo',stripSignals(turn.speech||'').slice(0,120));
+
+    stopWander();startIdle();
+  }catch(err){
+    removeTypingIndicator();
+    console.error(err);
+    appendOzoBubble('Sorry, something went wrong — check console.',false);
+    stopWander();startIdle();
+  }finally{
+    sendBtn.style.display='flex';stopBtn.style.display='none';
+    sendBtn.disabled=false;isStreaming=false;abortController=null;
+    intentOneOff=false;updateIntentUI();
   }
-  sendBtn.disabled=false;isStreaming=false;
 }
 
 /* ══════════════════════════════════════════════
@@ -987,14 +1530,20 @@ scrollBtn.addEventListener('click',scrollToBottom);
 /* ══════════════════════════════════════════════
    JXO STREAM
 ══════════════════════════════════════════════ */
+const JXO_PLAIN_SYSTEM_PROMPT=`You are Ozo, an AI assistant made by Jxo. You are friendly, concise, and helpful.
+Use markdown for formatting when it helps (lists, code blocks, headers, etc). Reply in plain natural language (not JSON).
+
+EMOTION SIGNALS — you can embed these anywhere in your response to move your eyes. They will be stripped before display:
+[OZO:HAPPY] [OZO:SAD] [OZO:SURPRISE] [OZO:THINK] [OZO:EXCITED] [OZO:CURIOUS] [OZO:NEUTRAL]`;
+
 async function streamJxoReply(query){
   const jxoBox=$('jxoResponse');
   jxoBox.style.display='block';
   jxoBox.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
   startThink();
-  const messages=[{role:'system',content:SYSTEM_PROMPT},{role:'user',content:query}];
+  const messages=[{role:'system',content:JXO_PLAIN_SYSTEM_PROMPT},{role:'user',content:query}];
   try{
-    const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({model:MODEL,stream:true,messages})});
+    const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({model:SELECTED_MODEL,stream:true,messages})});
     if(!resp.ok){jxoBox.textContent='Error '+resp.status;startJxoWander();return;}
     let accumulated='';
     const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
@@ -1028,6 +1577,7 @@ settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)close
 (async () => {
   marked.setOptions({breaks:true,gfm:true});
   updateIntentUI();
+  initSettingsUI();
   startEyeLoop();
 
   // Start eye animation during load
@@ -1067,6 +1617,7 @@ settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)close
     if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
     renderSidebar();
     textarea.focus();
+    if(SETTINGS.pip&&'documentPictureInPicture'in window){setTimeout(()=>enterDocPiP(),600);}
   }
 })();
 </script>
