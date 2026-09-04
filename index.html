@@ -76,7 +76,7 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 /* ── FACE ZONE ── */
 #faceZone{
   flex-shrink:0;display:flex;flex-direction:column;align-items:center;
-  padding:28px 16px 20px;background:var(--blue);position:relative;z-index:10;
+  padding:24px 16px 16px;background:var(--blue);position:relative;z-index:10;
 }
 #topbar{
   position:absolute;top:0;left:0;right:0;
@@ -94,19 +94,98 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 .top-btn:hover{background:var(--w20);color:#fff;border-color:var(--w30)}
 .top-btn svg{width:13px;height:13px;fill:currentColor}
 .top-btn.danger:hover{background:rgba(255,80,80,.15);border-color:rgba(255,120,120,.4);color:#ffb3b3}
+.top-btn.active-folder{background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.5);color:#a7f3d0}
 
 /* ── EYES ── */
-.face{display:flex;gap:var(--eye-gap);align-items:center;justify-content:center;margin-top:8px}
+.face{display:flex;gap:var(--eye-gap);align-items:center;justify-content:center;margin-top:4px;position:relative;min-height:210px;width:100%}
 .eye{
   width:var(--eye-w);height:var(--eye-h);
   background:#fff;border-radius:var(--eye-r);
   box-shadow:0 16px 48px rgba(0,0,0,.25),0 4px 16px rgba(0,0,0,.15);
   transform:translate(0,0) scale(1) rotate(0deg);
-  transition:transform 300ms cubic-bezier(.25,.46,.45,.94);
-  will-change:transform;
+  transition:transform 300ms cubic-bezier(.25,.46,.45,.94), opacity 250ms ease;
+  will-change:transform, opacity;
 }
-#statusBar{margin-top:10px;font-size:11px;color:var(--w60);letter-spacing:.06em;text-transform:uppercase;height:14px}
-.face-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--w20) 20%,var(--w20) 80%,transparent);margin-top:16px}
+#statusBar{margin-top:8px;font-size:11px;color:var(--w60);letter-spacing:.06em;text-transform:uppercase;height:14px}
+.face-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--w20) 20%,var(--w20) 80%,transparent);margin-top:12px}
+
+/* ── WIDGET MORPH CANVAS (EYES MERGED) ── */
+#eyeWidgetCanvas{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:0;height:0;overflow:hidden;
+  background:#ffffff;border-radius:24px;
+  box-shadow:0 20px 50px rgba(0,0,0,.35), 0 4px 16px rgba(0,0,0,.15);
+  opacity:0;pointer-events:none;
+  transition:width 380ms cubic-bezier(.25,.46,.45,.94),height 380ms cubic-bezier(.25,.46,.45,.94),
+             border-radius 380ms cubic-bezier(.25,.46,.45,.94),opacity 250ms ease;
+  z-index:15;
+}
+#eyeWidgetCanvas.open{opacity:1;pointer-events:all;width:min(420px, 92vw);height:min(320px, 75vh)}
+#eyeWidgetCanvas .wc-inner{
+  opacity:0;transition:opacity 260ms ease 120ms;width:100%;height:100%;
+  display:flex;flex-direction:column;color:#0f172a;overflow:auto;position:relative;
+}
+#eyeWidgetCanvas.content-in .wc-inner{opacity:1}
+#eyeWidgetCanvas .wc-inner::-webkit-scrollbar{width:5px}
+#eyeWidgetCanvas .wc-inner::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15);border-radius:4px}
+
+/* Corner close button injected automatically */
+.wc-corner-close{
+  position:absolute;top:10px;right:10px;z-index:99;
+  width:30px;height:30px;border-radius:50%;
+  background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s ease;box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+.wc-corner-close:hover{background:#e2e8f0;color:#0f172a;transform:scale(1.06)}
+.wc-corner-close svg{width:15px;height:15px;fill:currentColor}
+
+/* Widget Layout Helpers */
+.wc-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px;flex-shrink:0}
+.wc-title{font-weight:800;font-size:15px;color:#0f172a;display:flex;align-items:center;gap:8px}
+.wc-body{padding:8px 16px 16px;flex:1;display:flex;flex-direction:column;gap:10px;color:#1e293b}
+
+/* ── BUILT-IN WIDGET STYLES (Clean White BG, Vibrant Accent Colors) ── */
+
+/* Weather Widget */
+.wgt-weather-card{display:flex;flex-direction:column;gap:10px}
+.wgt-weather-top{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg, #fef3c7, #fee2e2);padding:14px;border-radius:16px}
+.wgt-weather-sun{width:44px;height:44px;color:#f59e0b;animation:sunPulse 4s infinite ease-in-out}
+@keyframes sunPulse{0%,100%{transform:rotate(0deg) scale(1)}50%{transform:rotate(45deg) scale(1.1)}}
+.wgt-weather-temp{font-size:36px;font-weight:900;color:#0f172a}
+.wgt-weather-desc{font-size:13px;font-weight:600;color:#475569}
+.wgt-weather-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.wgt-weather-chip{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 6px;text-align:center}
+.wgt-weather-chip .k{font-size:10px;text-transform:uppercase;color:#64748b;font-weight:700}
+.wgt-weather-chip .v{font-size:13px;font-weight:800;color:#0f172a;margin-top:2px}
+
+/* Calendar Widget */
+.wgt-cal{display:flex;flex-direction:column;gap:8px;width:100%}
+.wgt-cal-hdr{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:14px;color:#0f172a}
+.wgt-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:12px}
+.wgt-cal-day-hdr{font-weight:700;color:#94a3b8;font-size:11px;padding-bottom:4px}
+.wgt-cal-cell{padding:6px 0;border-radius:8px;color:#334155;font-weight:500}
+.wgt-cal-cell.today{background:#f59e0b;color:#fff;font-weight:800;box-shadow:0 3px 8px rgba(245,158,11,.4)}
+.wgt-cal-cell.other{opacity:.35}
+
+/* Time Widget */
+.wgt-time-card{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;gap:8px;text-align:center}
+.wgt-time-sun{width:50px;height:50px;fill:#f59e0b;margin-bottom:2px}
+.wgt-time-val{font-size:38px;font-weight:900;letter-spacing:-.02em;color:#0f172a;font-variant-numeric:tabular-nums}
+.wgt-time-date{font-size:13px;font-weight:600;color:#64748b;background:#f1f5f9;padding:4px 12px;border-radius:20px}
+
+/* Tic Tac Toe Widget */
+.wgt-ttt{display:flex;flex-direction:column;align-items:center;gap:10px}
+.wgt-ttt-status{font-weight:700;font-size:13px;color:#0f172a}
+.wgt-ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;width:190px;height:190px}
+.wgt-ttt-btn{background:#f1f5f9;border:2px solid #e2e8f0;border-radius:12px;font-size:24px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
+.wgt-ttt-btn:hover{background:#e2e8f0}
+.wgt-ttt-btn.x{color:#ef4444}.wgt-ttt-btn.o{color:#3b82f6}
+.wgt-ttt-reset{background:#10b981;color:#fff;border:none;padding:6px 16px;border-radius:10px;font-weight:700;font-size:12px;cursor:pointer}
+
+/* Dynamic HTML Widget Wrapper */
+.wgt-dyn-wrap{width:100%;height:100%;padding:12px;color:#0f172a}
 
 /* ── CHAT ── */
 #chatWrap{flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column}
@@ -117,7 +196,7 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 #welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;text-align:center;padding:20px;min-height:180px}
 #welcome h2{color:#fff;font-size:1.15em;font-weight:600;opacity:.9}
 #welcome p{color:var(--w60);font-size:13.5px}
-.suggestion-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px;max-width:560px}
+.suggestion-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:6px;max-width:580px}
 .suggestion{background:var(--w10);border:1px solid var(--w20);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--w80);display:flex;align-items:center;gap:6px;transition:all .15s}
 .suggestion:hover{background:var(--w20);color:#fff;border-color:var(--w30)}
 .suggestion svg{width:14px;height:14px;fill:currentColor;flex-shrink:0}
@@ -134,40 +213,13 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 .msg-row.user .bubble{background:#fff;color:var(--blue-dark);border-bottom-right-radius:4px;font-weight:500}
 .msg-row.ozo .bubble{background:var(--w15);color:#fff;border-bottom-left-radius:4px;border:1px solid var(--w20);backdrop-filter:blur(4px)}
 .msg-row.ozo .bubble h1,.msg-row.ozo .bubble h2,.msg-row.ozo .bubble h3{color:#fff;margin:.6em 0 .3em;font-weight:700}
-.msg-row.ozo .bubble h1{font-size:1.15em}.msg-row.ozo .bubble h2{font-size:1.05em}.msg-row.ozo .bubble h3{font-size:.95em}
 .msg-row.ozo .bubble p{margin:.3em 0}
 .msg-row.ozo .bubble ul,.msg-row.ozo .bubble ol{padding-left:1.4em;margin:.3em 0}
-.msg-row.ozo .bubble li{margin:.2em 0}
 .msg-row.ozo .bubble code{background:rgba(0,0,0,.25);color:#d0eaff;padding:1px 6px;border-radius:4px;font-size:.88em;font-family:'Cascadia Code','Fira Code',monospace}
 .msg-row.ozo .bubble pre{background:rgba(0,0,0,.3);border:1px solid var(--w20);border-radius:8px;padding:10px 12px;overflow-x:auto;margin:.5em 0;position:relative}
 .msg-row.ozo .bubble pre code{background:none;padding:0;color:#cce8ff}
-.copy-code-btn{position:absolute;top:6px;right:8px;background:var(--w20);border:1px solid var(--w30);color:var(--w80);border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .12s}
-.copy-code-btn:hover{background:var(--w30);color:#fff}
-.msg-row.ozo .bubble a{color:#b3d8ff;text-decoration:underline}
-.msg-row.ozo .bubble blockquote{border-left:3px solid var(--w30);padding-left:10px;color:var(--w80);margin:.4em 0}
-.msg-row.ozo .bubble table{border-collapse:collapse;font-size:.9em;width:100%;margin:.5em 0}
-.msg-row.ozo .bubble th,.msg-row.ozo .bubble td{border:1px solid var(--w20);padding:5px 9px;text-align:left}
-.msg-row.ozo .bubble th{background:rgba(0,0,0,.2);color:#fff}
-.msg-row.ozo .bubble strong{color:#fff}
-.msg-row.ozo .bubble em{color:var(--w80)}
-.msg-row.ozo .bubble hr{border:none;border-top:1px solid var(--w20);margin:.6em 0}
-
-.action-chip{display:inline-flex;align-items:center;gap:6px;background:var(--w20);border:1px solid var(--w30);color:#fff;border-radius:20px;padding:4px 12px;font-size:12.5px;cursor:pointer;transition:background .15s;text-decoration:none}
-.action-chip:hover{background:var(--w30)}
-.action-chip svg{width:13px;height:13px;fill:currentColor}
-
-.msg-actions{display:flex;gap:3px;margin-top:2px;opacity:0;transition:opacity .15s}
-.msg-row:hover .msg-actions{opacity:1}
-.msg-act-btn{background:none;border:none;cursor:pointer;color:var(--w60);padding:4px 7px;border-radius:6px;display:flex;align-items:center;gap:4px;font-size:11.5px;font-family:inherit;transition:all .12s}
-.msg-act-btn:hover{color:#fff;background:var(--w15)}
-.msg-act-btn svg{width:13px;height:13px;fill:currentColor}
-.msg-act-btn.intent-off{color:#ffcc80;border:1px solid rgba(255,200,100,.3)}
-.msg-act-btn.intent-off:hover{background:rgba(255,200,100,.15);color:#ffd54f}
-
-.typing{display:flex;gap:5px;align-items:center;padding:12px 16px}
-.typing span{width:8px;height:8px;background:var(--w60);border-radius:50%;animation:blink 1.2s infinite}
-.typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
-@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.file-save-btn{position:absolute;top:6px;right:8px;background:rgba(16,185,129,.25);border:1px solid rgba(16,185,129,.5);color:#a7f3d0;border-radius:5px;padding:2px 8px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .12s}
+.file-save-btn:hover{background:rgba(16,185,129,.4)}
 
 #scrollBtn{position:absolute;bottom:8px;right:20px;background:var(--w20);border:1px solid var(--w30);color:#fff;border-radius:50%;width:34px;height:34px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;transition:all .15s}
 #scrollBtn.visible{display:flex}
@@ -213,137 +265,27 @@ html,body{height:100%;background:var(--blue);color:#fff;font-family:'Segoe UI',s
 #loadingScreen p{font-size:12px;color:var(--w60);letter-spacing:.1em;text-transform:uppercase}
 
 /* ── TOAST ── */
-#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border:1px solid var(--w20);color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap}
+#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(8px);background:rgba(0,0,0,.75);backdrop-filter:blur(8px);border:1px solid var(--w20);color:#fff;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:999;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── MODAL ── */
-#modalOverlay{position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .18s}
-#modalOverlay.open{opacity:1;pointer-events:all}
-#modal{background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(360px,90vw);transform:scale(.96);transition:transform .18s}
-#modalOverlay.open #modal{transform:scale(1)}
-#modal h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
-#modal p{font-size:13.5px;color:var(--w80);margin-bottom:20px;line-height:1.5}
-.modal-btns{display:flex;gap:8px;justify-content:flex-end}
-.modal-btn{border:none;border-radius:9px;padding:8px 18px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600}
-.modal-btn.cancel{background:var(--w15);color:#fff;border:1px solid var(--w30)}.modal-btn.cancel:hover{background:var(--w20)}
-.modal-btn.confirm{background:rgba(255,80,80,.85);color:#fff}.modal-btn.confirm:hover{background:rgba(255,80,80,1)}
-
-/* ── JXO SEARCH MODE ── */
-body.jxomode #shell{flex-direction:column;align-items:center;justify-content:center;overflow:auto}
-body.jxomode #sidebar{display:none}
-body.jxomode #main{flex:none;align-items:center;width:100%;max-width:520px;overflow:visible;padding:40px 20px}
-body.jxomode #topbar{display:none}
-body.jxomode #chatWrap{display:none}
-body.jxomode #inputBar{display:none}
-body.jxomode #faceZone{padding:0;background:transparent;width:100%;align-items:center;overflow:visible}
-body.jxomode #statusBar{display:none}
-body.jxomode .face-divider{display:none}
-body.jxomode .face{margin-top:0}
-body.jxomode .eye{width:60px;height:98px;border-radius:14px}
-body.jxomode .face{gap:28px}
-body.jxomode #jxoResponse{display:block;margin-top:20px}
-#jxoResponse::-webkit-scrollbar{width:3px}#jxoResponse::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:3px}
-#jxoQuery{margin-top:18px;font-size:15px;color:rgba(255,255,255,.85);text-align:center;font-weight:500;letter-spacing:-.01em;max-width:380px;line-height:1.4;display:none;}
-body.jxomode #jxoQuery{display:block}
-
-/* ── MINI MODE ── */
-body.minimode #sidebar{display:none}
-body.minimode #topbar{display:none}
-body.minimode #statusBar{display:none}
-body.minimode .face-divider{display:none}
-body.minimode #faceZone{padding:18px 16px 14px}
-body.minimode #scrollBtn{display:none!important}
+/* ── SETTINGS MODAL ── */
+#settingsOverlay{position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:101;opacity:0;pointer-events:none;transition:opacity .18s}
+#settingsOverlay.open{opacity:1;pointer-events:all}
+#settingsModal{background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(380px,92vw);max-height:86vh;overflow-y:auto;transform:scale(.96);transition:transform .18s}
+#settingsOverlay.open #settingsModal{transform:scale(1)}
+.set-row{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--w80)}
+.set-row .set-label{font-weight:600;color:#fff}
+.set-row .set-sub{font-size:12px;color:var(--w60);margin-top:2px}
+.set-select,.set-input{width:100%;background:var(--w10);border:1px solid var(--w20);color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none}
+.set-select option{background:var(--blue-dark);color:#fff}
+.set-group{display:flex;flex-direction:column;gap:6px}
+.set-group-label{font-size:12px;font-weight:600;color:var(--w80)}
 
 @media(max-width:600px){
   #sidebar{position:absolute;top:0;left:0;height:100%;transform:translateX(0)}
   #sidebar.collapsed{transform:translateX(-100%);width:var(--sidebar);min-width:var(--sidebar);opacity:1}
   :root{--eye-w:90px;--eye-h:148px;--eye-gap:40px}
 }
-
-/* ══════════════════════════════════════════════
-   WIDGET MORPH CANVAS
-   (eyes keep their original .eye styling & idle look;
-   this layer only fades content INTO the merged eye shape
-   once JS has animated the eyes together via inline transforms)
-══════════════════════════════════════════════ */
-.face{position:relative}
-#eyeWidgetCanvas{
-  position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%);
-  width:0;height:0;overflow:hidden;
-  background:#fff;border-radius:var(--eye-r);
-  box-shadow:0 16px 48px rgba(0,0,0,.25),0 4px 16px rgba(0,0,0,.15);
-  opacity:0;pointer-events:none;
-  transition:width 340ms cubic-bezier(.25,.46,.45,.94),height 340ms cubic-bezier(.25,.46,.45,.94),
-             border-radius 340ms cubic-bezier(.25,.46,.45,.94),opacity 220ms ease;
-  z-index:6;
-}
-#eyeWidgetCanvas.open{opacity:1;pointer-events:all}
-#eyeWidgetCanvas .wc-inner{
-  opacity:0;transition:opacity 260ms ease 120ms;width:100%;height:100%;
-  display:flex;flex-direction:column;color:var(--blue-dark);overflow:auto;
-}
-#eyeWidgetCanvas.content-in .wc-inner{opacity:1}
-#eyeWidgetCanvas .wc-inner::-webkit-scrollbar{width:4px}
-#eyeWidgetCanvas .wc-inner::-webkit-scrollbar-thumb{background:rgba(0,80,180,.2);border-radius:4px}
-.wc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 6px;flex-shrink:0}
-.wc-title{font-weight:800;font-size:14px;color:var(--blue-dark);display:flex;align-items:center;gap:6px}
-.wc-close{background:rgba(0,80,180,.08);border:none;color:var(--blue-dark);width:24px;height:24px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.wc-close:hover{background:rgba(0,80,180,.16)}
-.wc-close svg{width:13px;height:13px;fill:currentColor}
-.wc-body{padding:4px 16px 16px;flex:1;display:flex;flex-direction:column;gap:10px}
-
-/* weather widget */
-.wgt-weather-main{display:flex;align-items:center;gap:14px}
-.wgt-weather-temp{font-size:34px;font-weight:800;color:var(--blue-dark)}
-.wgt-weather-desc{font-size:12.5px;color:#5b7fa6}
-.wgt-weather-loc{font-size:12px;color:#7d97b8;margin-top:2px}
-.wgt-weather-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
-.wgt-weather-chip{background:rgba(0,80,180,.06);border-radius:10px;padding:6px 4px;text-align:center}
-.wgt-weather-chip .k{font-size:9.5px;text-transform:uppercase;color:#7d97b8;letter-spacing:.05em}
-.wgt-weather-chip .v{font-size:13px;font-weight:700;color:var(--blue-dark);margin-top:1px}
-
-/* music widget */
-.wgt-music-art{width:100%;aspect-ratio:2.4/1;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--blue-deeper));display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0}
-.wgt-music-art svg{width:34px;height:34px;fill:#fff;opacity:.85}
-.wgt-music-title{font-weight:700;font-size:13.5px;color:var(--blue-dark);margin-top:8px}
-.wgt-music-sub{font-size:11.5px;color:#7d97b8}
-.wgt-music-controls{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:8px}
-.wgt-music-btn{background:var(--blue-dark);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.wgt-music-btn.small{width:28px;height:28px;background:rgba(0,80,180,.1);color:var(--blue-dark)}
-.wgt-music-btn svg{width:16px;height:16px;fill:currentColor}
-.wgt-music-seek{width:100%;accent-color:var(--blue-dark);margin-top:6px}
-.wgt-music-time{display:flex;justify-content:space-between;font-size:10.5px;color:#7d97b8}
-
-/* dynamic widget */
-.wgt-dyn-field{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;border-bottom:1px solid rgba(0,80,180,.08)}
-.wgt-dyn-field .fk{color:#5b7fa6}
-.wgt-dyn-field .fv{font-weight:700;color:var(--blue-dark);text-align:right}
-.wgt-dyn-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.wgt-dyn-btn{background:var(--blue-dark);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-.wgt-dyn-btn:hover{background:var(--blue-deeper)}
-
-/* hardware widget (camera / screen share preview) */
-.wgt-hw-video{width:100%;border-radius:12px;background:#000;aspect-ratio:16/10;object-fit:cover}
-.wgt-hw-stop{margin-top:8px;background:rgba(255,70,70,.9);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;align-self:center}
-
-/* topbar hardware/pip buttons */
-.hw-active{color:#7CFC9A!important}
-#pipBtn.pip-active{background:rgba(124,252,154,.18);border-color:rgba(124,252,154,.4);color:#a8ffc0}
-
-/* settings extras */
-.set-row{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:var(--w80)}
-.set-row .set-label{font-weight:600;color:#fff}
-.set-row .set-sub{font-size:12px;color:var(--w60);margin-top:2px}
-.set-select,.set-input{width:100%;background:var(--w10);border:1px solid var(--w20);color:#fff;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none}
-.set-select option{background:var(--blue-dark);color:#fff}
-.set-input::placeholder{color:var(--w60)}
-.set-group{display:flex;flex-direction:column;gap:6px}
-.set-group-label{font-size:12px;font-weight:600;color:var(--w80)}
-
-/* PiP mode adjustments (styles copied into the floating doc) */
-body.ozo-pip{background:var(--blue);height:100vh;width:100vw;overflow:hidden;display:flex;flex-direction:column}
-body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
 </style>
 </head>
 <body>
@@ -373,7 +315,7 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
     <div class="sb-section">Conversations</div>
     <div id="chatList"></div>
     <div class="sb-footer">
-      Ozo by <a href="#" target="_blank">Jxo</a> &middot; <a href="https://openrouter.ai" target="_blank">OpenRouter</a>
+      Ozo by Jxo &middot; Powered by OpenRouter &amp; WebMCP
     </div>
   </div>
 
@@ -385,6 +327,10 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
           <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
         </button>
         <div class="tb-right">
+          <button class="top-btn" id="folderBtn" title="Select target workspace folder for File System Access API">
+            <svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span id="folderBtnLabel">Workspace</span>
+          </button>
           <button class="top-btn" id="pipBtn" title="Pop out into Picture-in-Picture">
             <svg viewBox="0 0 24 24"><path d="M19 7H9c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm0 8H9V9h10v6zM3 5h12V3H3c-1.1 0-2 .9-2 2v12h2V5z"/></svg>
             PiP
@@ -393,10 +339,6 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
             <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54a7.02 7.02 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.02 7.02 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6a3.6 3.6 0 1 1 0-7.2 3.6 3.6 0 0 1 0 7.2z"/></svg>
             Settings
           </button>
-          <button class="top-btn" id="exportBtn">
-            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z"/></svg>
-            Export
-          </button>
           <button class="top-btn danger" id="clearChatBtn">
             <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
             Clear
@@ -404,30 +346,33 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
         </div>
       </div>
 
+      <!-- EYES & MERGED WIDGET CANVAS -->
       <div class="face" aria-hidden="true">
         <div class="eye" id="leftEye"></div>
         <div class="eye" id="rightEye"></div>
-        <div id="eyeWidgetCanvas"><div class="wc-inner" id="wcInner"></div></div>
+        <div id="eyeWidgetCanvas">
+          <button class="wc-corner-close" id="wcCloseBtn" onclick="closeEyeWidget()" title="Close Widget">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+          </button>
+          <div class="wc-inner" id="wcInner"></div>
+        </div>
       </div>
       <div id="statusBar">Idle</div>
-      <div id="jxoQuery"></div>
       <div class="face-divider"></div>
     </div>
 
-    <div id="jxoResponse" style="display:none;width:min(520px,90vw);max-height:50vh;overflow-y:auto;font-size:14px;line-height:1.7;color:rgba(255,255,255,.92);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:16px 18px;backdrop-filter:blur(6px);margin:0 auto"></div>
-
+    <!-- CHAT WRAPPER -->
     <div id="chatWrap">
       <div id="chat">
         <div id="welcome">
           <h2>Hey, I'm Ozo</h2>
-          <p>Ask me anything — I can chat, search, and open websites.</p>
+          <p>Ask me anything — I can run interactive widgets, stream answers, and write files directly to your workspace.</p>
           <div class="suggestion-grid">
-            <div class="suggestion" data-q="Search for pie recipes"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search pie recipes</div>
-            <div class="suggestion" data-q="Open YouTube"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Open YouTube</div>
-            <div class="suggestion" data-q="Take me to Gmail"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Open Gmail</div>
-            <div class="suggestion" data-q="What is the meaning of life?"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>Meaning of life</div>
-            <div class="suggestion" data-q="Write me a haiku about rain"><svg viewBox="0 0 24 24"><path d="M6 19v2H4v-2h2zm4 0v2H8v-2h2zm4 0v2h-2v-2h2zm4 0v2h-2v-2h2zM4 3h16l-5 9H9L4 3zm2.83 2L9.5 10h5l2.67-5H6.83z"/></svg>Haiku about rain</div>
-            <div class="suggestion" data-q="Open a YouTube search for lofi music"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>Lofi on YouTube</div>
+            <div class="suggestion" data-q="Show me the date and calendar"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>Show Calendar</div>
+            <div class="suggestion" data-q="What time is it right now?"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>Show Clock Widget</div>
+            <div class="suggestion" data-q="Make a tic tac toe game"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3V3zm2 2v4h4V5H5zm6 0v4h4V5h-4zm6 0v4h4V5h-4zM5 11v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4zM5 17v4h4v-4H5zm6 0v4h4v-4h-4zm6 0v4h4v-4h-4z"/></svg>Play Tic-Tac-Toe</div>
+            <div class="suggestion" data-q="What's the weather today?"><svg viewBox="0 0 24 24"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM1 10.5h3v2H1zM11 .55h2V3.5h-2zm7.24 4.29l1.79-1.8-1.41-1.41-1.8 1.79 1.42 1.42zM17.24 16.16l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5h3v2h-3zm-8 7c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>Check Weather</div>
+            <div class="suggestion" data-q="Generate a simple landing page index.html"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>Generate Code File</div>
           </div>
         </div>
       </div>
@@ -436,6 +381,7 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
       </button>
     </div>
 
+    <!-- INPUT BAR -->
     <div id="inputBar">
       <div class="input-top">
         <button id="intentToggleBtn" title="Toggle smart intent for this message">
@@ -454,14 +400,14 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
           </button>
         </div>
       </div>
-      <div class="input-hint">Ozo by Jxo &middot; powered by OpenRouter</div>
+      <div class="input-hint">Ozo by Jxo &middot; Powered by OpenRouter &amp; WebMCP</div>
     </div>
   </div>
 </div>
 
 <!-- SETTINGS MODAL -->
-<div id="settingsOverlay" style="position:fixed;inset:0;background:rgba(0,40,100,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:101;opacity:0;pointer-events:none;transition:opacity .18s">
-  <div id="settingsModal" style="background:var(--blue-dark);border:1px solid var(--w30);border-radius:16px;padding:24px;width:min(380px,92vw);max-height:86vh;overflow-y:auto;transform:scale(.96);transition:transform .18s">
+<div id="settingsOverlay">
+  <div id="settingsModal">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <h3 style="font-size:15px;font-weight:700;color:#fff">Settings</h3>
       <button id="settingsClose" style="background:none;border:none;cursor:pointer;color:var(--w60);padding:4px;border-radius:6px;display:flex" title="Close">
@@ -469,17 +415,6 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
       </button>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px">
-
-      <div class="set-row">
-        <div>
-          <div class="set-label">Smart Intent</div>
-          <div class="set-sub">Detect when you want to open sites or search</div>
-        </div>
-        <div class="toggle on" id="intentTogglePerm" title="Enable/disable smart intent globally" style="flex-shrink:0;margin-left:14px"></div>
-      </div>
-
-      <div style="height:1px;background:var(--w15)"></div>
-
       <div class="set-group-label">Model &amp; API</div>
       <div class="set-group">
         <label class="set-sub" for="modelSelect">Model (OpenRouter)</label>
@@ -493,76 +428,24 @@ body.ozo-pip #pipRoot{display:flex;flex-direction:column;height:100%}
         <label class="set-sub" for="apiKeyInput">Custom OpenRouter API Key <span style="opacity:.7">(optional)</span></label>
         <input class="set-input" id="apiKeyInput" type="password" placeholder="sk-or-v1-…" autocomplete="off"/>
       </div>
-
       <div style="height:1px;background:var(--w15)"></div>
-
-      <div class="set-group-label">Engine</div>
+      <div class="set-group-label">Local Workspace Access</div>
       <div class="set-row">
         <div>
-          <div class="set-label">Offline Mode</div>
-          <div class="set-sub">Use Chrome's built-in AI (window.ai) instead of OpenRouter</div>
+          <div class="set-label">Target Directory</div>
+          <div class="set-sub" id="folderStatusText">No folder selected</div>
         </div>
-        <div class="toggle" id="toggleOffline" style="flex-shrink:0;margin-left:14px"></div>
-      </div>
-
-      <div style="height:1px;background:var(--w15)"></div>
-
-      <div class="set-group-label">Hardware</div>
-      <div class="set-row">
-        <div>
-          <div class="set-label">Camera</div>
-          <div class="set-sub">Allow Ozo to request camera capture</div>
-        </div>
-        <div class="toggle" id="toggleCamera" style="flex-shrink:0;margin-left:14px"></div>
-      </div>
-      <div class="set-row">
-        <div>
-          <div class="set-label">Screen Share</div>
-          <div class="set-sub">Allow Ozo to request your screen</div>
-        </div>
-        <div class="toggle" id="toggleScreen" style="flex-shrink:0;margin-left:14px"></div>
-      </div>
-      <div class="set-row">
-        <div>
-          <div class="set-label">Browser Notifications</div>
-          <div class="set-sub">Let Ozo alert you when you're on another tab</div>
-        </div>
-        <div class="toggle" id="toggleNotif" style="flex-shrink:0;margin-left:14px"></div>
-      </div>
-
-      <div style="height:1px;background:var(--w15)"></div>
-
-      <div class="set-group-label">Layout</div>
-      <div class="set-row">
-        <div>
-          <div class="set-label">Auto-launch Picture-in-Picture</div>
-          <div class="set-sub">Pop Ozo into a floating window automatically</div>
-        </div>
-        <div class="toggle" id="togglePip" style="flex-shrink:0;margin-left:14px"></div>
-      </div>
-
-      <div style="height:1px;background:var(--w15)"></div>
-      <div style="font-size:12px;color:var(--w60);text-align:center">
-        Ozo by Jxo &middot; powered by <a href="https://openrouter.ai" target="_blank" style="color:var(--w60)">OpenRouter</a>
+        <button class="top-btn" onclick="selectWorkspaceFolder()">Choose Folder</button>
       </div>
     </div>
   </div>
 </div>
 
 <div id="toast"></div>
-<div id="modalOverlay">
-  <div id="modal">
-    <h3 id="modalTitle"></h3><p id="modalMsg"></p>
-    <div class="modal-btns">
-      <button class="modal-btn cancel" id="modalCancel">Cancel</button>
-      <button class="modal-btn confirm" id="modalConfirm">Delete</button>
-    </div>
-  </div>
-</div>
 
 <script>
 /* ══════════════════════════════════════════════
-   CONFIG
+   CONFIG & INITIALIZATION
 ══════════════════════════════════════════════ */
 const KEYS_URL = 'https://jxoj.github.io/Ozo/keys.json';
 const OR_URL = 'https://openrouter.ai/api/v1/chat/completions';
@@ -572,1111 +455,593 @@ const ALLOWED_MODELS = [
   'thm/glm-5.2:free'
 ];
 
-let API_KEY = '';           // fallback key fetched from keys.json
+let API_KEY = '';
 let CUSTOM_API_KEY = localStorage.getItem('ozo_custom_key') || '';
 let SELECTED_MODEL = localStorage.getItem('ozo_model') || ALLOWED_MODELS[0];
+let targetDirHandle = null;
 
 function effectiveApiKey(){ return CUSTOM_API_KEY || API_KEY; }
 
 async function loadKey() {
   try {
     const res = await fetch(KEYS_URL);
-    if (!res.ok) throw new Error('Failed to fetch keys');
-    const data = await res.json();
-    const keys = data.keys;
-    if (!keys || !keys.length) throw new Error('No keys in keys.json');
-    API_KEY = keys[Math.floor(Math.random() * keys.length)];
-  } catch (e) {
-    console.error('Key load error:', e);
-    // Only fatal if the user hasn't supplied their own key and isn't offline
-    if (!CUSTOM_API_KEY && !SETTINGS.offline) {
-      document.getElementById('loadingScreen').innerHTML =
-        '<p style="color:#ffb3b3;font-size:14px;text-align:center;padding:20px">Failed to load API keys.<br>Check that keys.json is accessible, or add a custom key in Settings.</p>';
-      throw e;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.keys && data.keys.length) {
+        API_KEY = data.keys[Math.floor(Math.random() * data.keys.length)];
+      }
     }
+  } catch (e) {
+    console.warn('Fallback key load note:', e);
   }
 }
 
-/* ── PERSISTED FEATURE SETTINGS ── */
-const SETTINGS = Object.assign({
-  camera:false, screen:false, notif:false, pip:false, offline:false
-}, JSON.parse(localStorage.getItem('ozo_settings')||'{}'));
-function saveSettings(){localStorage.setItem('ozo_settings',JSON.stringify(SETTINGS));}
-
-/* Builds the capability context injected into the system prompt so the
-   model only ever requests hardware/features the user has actually
-   enabled beforehand. */
-function capabilityContext(){
-  const lines=[];
-  lines.push(SETTINGS.camera   ? '- Camera capture is ENABLED — you may request it.' : '- Camera capture is DISABLED — never request it.');
-  lines.push(SETTINGS.screen   ? '- Screen sharing is ENABLED — you may request it.' : '- Screen sharing is DISABLED — never request it.');
-  lines.push(SETTINGS.notif    ? '- Browser notifications are ENABLED — you may send them.' : '- Browser notifications are DISABLED — never send them.');
-  lines.push(SETTINGS.pip      ? '- Document Picture-in-Picture is ENABLED (auto-launch on).' : '- Document Picture-in-Picture is available on request but not auto-launching.');
-  lines.push(SETTINGS.offline  ? "- Running in OFFLINE mode via the browser's on-device model." : '- Running ONLINE via OpenRouter.');
-  return lines.join('\n');
-}
-
-/* Unified, strict JSON response schema. No hardcoded trigger phrases —
-   the model infers speech/emotion/widget/hardware/navigation purely from
-   the conversation. */
-function buildSystemPrompt(){
-return `You are Ozo, an AI assistant made by Jxo, embodied as a pair of white rounded-rectangle eyes on screen.
-You are friendly, concise, and helpful. You NEVER see literal trigger keywords — you infer what the user wants from natural conversation and decide the best response yourself.
-
-CURRENT CAPABILITIES (only act within these):
-${capabilityContext()}
-
-You must respond with ONLY a single valid JSON object — no markdown fences, no prose outside it — matching exactly this schema:
-{
-  "speech": "The natural language reply to show/speak to the user. Markdown allowed.",
-  "emotion": "neutral | happy | thinking | surprised | focusing",
-  "widget": {
-    "type": "none | weather | music | dynamic",
-    "action": "open | close | update",
-    "data": {}
-  },
-  "hardware_request": {
-    "type": "none | camera | screen_share | notification",
-    "action": "activate | capture"
-  },
-  "navigation": {
-    "type": "none | open_url | search",
-    "url": "",
-    "query": "",
-    "label": ""
-  }
-}
-
-Guidance:
-- widget.type="weather": data should include location, tempC, tempF, condition, high, low, humidity.
-- widget.type="music": data should include title, artist, trackUrl (a direct playable audio URL if you have one, else omit), action open/update/close controls playback state via "playing": true/false.
-- widget.type="dynamic": for anything else worth a small visual card. data = { title, fields:[{label,value}], actions:[{label}] }.
-- Only set widget.action="open" the first time you introduce a widget in a turn; use "update" to modify an already-open widget; use "close" plus type of the currently open widget to dismiss it.
-- Only request hardware_request when the capability above is ENABLED, and only when the user's message genuinely implies wanting it (e.g. wanting to show you something, wanting a visual on-screen alert). If disabled, always return "none" and instead explain in speech that the feature is off in Settings.
-- navigation.type="open_url" for a direct, unambiguous command to open a specific website. "search" for a request to search the web. Otherwise "none". Be conservative — when in doubt, "none".
-- Keep "speech" natural; do not mention this JSON schema to the user.`;
-}
-
-/* ══════════════════════════════════════════════
-   URL PARAMS
-══════════════════════════════════════════════ */
-const params=new URLSearchParams(window.location.search);
-const isMini=params.has('minimode');
-const isJxo=params.has('jxosearch');
-const jxoQuery=isJxo?decodeURIComponent(params.get('jxosearch')||''):'';
-
-/* ══════════════════════════════════════════════
-   DOM
-══════════════════════════════════════════════ */
+/* ── DOM ELEMENTS ── */
 const $=id=>document.getElementById(id);
-const leftEye=$('leftEye'),rightEye=$('rightEye');
-const sendBtn=$('sendBtn'),stopBtn=$('stopBtn');
-const textarea=$('userInput');
-const chatEl=$('chat');
-const statusEl=$('statusBar');
-const chatList=$('chatList');
-const toast=$('toast');
-const modalOverlay=$('modalOverlay');
-const scrollBtn=$('scrollBtn');
-const intentToggleBtn=$('intentToggleBtn');
-const intentTogglePerm=$('intentTogglePerm');
-const modelSelect=$('modelSelect');
-const apiKeyInput=$('apiKeyInput');
-const toggleOffline=$('toggleOffline');
-const toggleCamera=$('toggleCamera');
-const toggleScreen=$('toggleScreen');
-const toggleNotif=$('toggleNotif');
-const togglePip=$('togglePip');
-const pipBtn=$('pipBtn');
-const eyeWidgetCanvas=$('eyeWidgetCanvas');
-const wcInner=$('wcInner');
-const faceEl=document.querySelector('.face');
+const leftEye=$('leftEye'), rightEye=$('rightEye');
+const sendBtn=$('sendBtn'), stopBtn=$('stopBtn'), textarea=$('userInput');
+const chatEl=$('chat'), statusEl=$('statusBar');
+const toast=$('toast'), scrollBtn=$('scrollBtn');
+const eyeWidgetCanvas=$('eyeWidgetCanvas'), wcInner=$('wcInner');
+const folderBtnLabel=$('folderBtnLabel'), folderBtn=$('folderBtn');
 
-/* ══════════════════════════════════════════════
-   STATE
-══════════════════════════════════════════════ */
+/* ── STATE ── */
 let currentChatId=null;
 let abortController=null;
 let isStreaming=false;
-let sidebarOpen=true;
-let intentPermEnabled=JSON.parse(localStorage.getItem('ozo_intent_perm')?? 'true');
-let intentOneOff=false;
-
-/* ══════════════════════════════════════════════
-   STORAGE
-══════════════════════════════════════════════ */
-function getSessions(){try{return JSON.parse(localStorage.getItem('ozo_sessions')||'[]');}catch{return[];}}
-function saveSessions(s){localStorage.setItem('ozo_sessions',JSON.stringify(s));}
-function getSession(id){return getSessions().find(s=>s.id===id)||null;}
-function upsertSession(s){const all=getSessions();const i=all.findIndex(x=>x.id===s.id);if(i>=0)all[i]=s;else all.unshift(s);saveSessions(all);}
-function deleteSession(id){saveSessions(getSessions().filter(s=>s.id!==id));}
-function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
-
-/* ══════════════════════════════════════════════
-   EYE ENGINE
-══════════════════════════════════════════════ */
-const EYE_MAX_X=18;
-const EYE_MAX_Y=22;
-const EYE_JXO_MAX=8;
-
 let eyeMode='idle';
 let wanderHandle=null;
 let mouseX=window.innerWidth/2, mouseY=window.innerHeight/2;
-let currentEmotionTimer=null;
 let targetLX=0,targetLY=0,targetRX=0,targetRY=0,targetScale=1,targetLR=0,targetRR=0;
+let lerpLX=0,lerpLY=0,lerpRX=0,lerpRY=0,lerpScale=1,lerpLR=0,lerpRR=0;
 let animFrame=null;
+let isWidgetActive=false;
 
 document.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;});
 
-let lerpLX=0,lerpLY=0,lerpRX=0,lerpRY=0,lerpScale=1,lerpLR=0,lerpRR=0;
+/* ══════════════════════════════════════════════
+   SYSTEM PROMPT
+══════════════════════════════════════════════ */
+function buildSystemPrompt(){
+return `You are Ozo, an AI assistant made by Jxo, embodied as a pair of white rounded-rectangle eyes on screen.
+You are friendly, concise, fast, and highly interactive.
 
+IMPORTANT RESPONSE RULES:
+1. STREAM SPEED FIRST: If the user is asking a standard conversational question, coding inquiry, or normal prompt where NO widget, navigation, or hardware request is needed, output DIRECT markdown text directly without wrapping in JSON.
+2. WIDGET FORMATTING: If a widget IS needed (date, calendar, time, weather, games like tic-tac-toe, calculator, music, tools), output strictly JSON matching this structure:
+{
+  "speech": "Brief commentary to display in chat",
+  "widget": {
+    "type": "dynamic | calendar | time | weather | music | tictactoe",
+    "data": {
+      "html": "Optional full HTML/CSS/JS for dynamic custom widgets"
+    }
+  },
+  "files": [
+    { "path": "filename.ext", "content": "file contents" }
+  ]
+}
+
+WIDGET STYLING RULES:
+- The widget canvas is a merged WHITE box (#ffffff background). Do NOT write blue text on blue backgrounds!
+- Use vibrant accent colors other than blue (e.g., golden yellow sun #f59e0b, emerald green #10b981, coral red #f43f5e, slate text #0f172a).
+- A close button is automatically injected in the top right corner of the merged white box container.
+- IMPLICIT WIDGET TRIGGERING: When the user asks for date/calendar, time, games (tic tac toe), or weather, ALWAYS activate a widget payload!`;
+}
+
+/* ══════════════════════════════════════════════
+   EYE ENGINE & MERGE TRANSFORMATIONS
+══════════════════════════════════════════════ */
 function lerp(a,b,t){return a+(b-a)*t;}
 function clamp(v,mn,mx){return Math.max(mn,Math.min(mx,v));}
 
 function runEyeFrame(){
-  const speed=eyeMode==='idle'?0.06:0.1;
-  lerpLX=lerp(lerpLX,targetLX,speed);
-  lerpLY=lerp(lerpLY,targetLY,speed);
-  lerpRX=lerp(lerpRX,targetRX,speed);
-  lerpRY=lerp(lerpRY,targetRY,speed);
-  lerpScale=lerp(lerpScale,targetScale,speed);
-  lerpLR=lerp(lerpLR,targetLR,speed);
-  lerpRR=lerp(lerpRR,targetRR,speed);
-  leftEye.style.transition='none';
-  rightEye.style.transition='none';
-  leftEye.style.transform=`translate(${lerpLX.toFixed(1)}px,${lerpLY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpLR.toFixed(2)}deg)`;
-  rightEye.style.transform=`translate(${lerpRX.toFixed(1)}px,${lerpRY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpRR.toFixed(2)}deg)`;
-  animFrame=requestAnimationFrame(runEyeFrame);
+  if (!isWidgetActive) {
+    const speed = eyeMode === 'idle' ? 0.06 : 0.1;
+    lerpLX = lerp(lerpLX, targetLX, speed);
+    lerpLY = lerp(lerpLY, targetLY, speed);
+    lerpRX = lerp(lerpRX, targetRX, speed);
+    lerpRY = lerp(lerpRY, targetRY, speed);
+    lerpScale = lerp(lerpScale, targetScale, speed);
+    lerpLR = lerp(lerpLR, targetLR, speed);
+    lerpRR = lerp(lerpRR, targetRR, speed);
+
+    leftEye.style.transform = `translate(${lerpLX.toFixed(1)}px,${lerpLY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpLR.toFixed(2)}deg)`;
+    rightEye.style.transform = `translate(${lerpRX.toFixed(1)}px,${lerpRY.toFixed(1)}px) scale(${lerpScale.toFixed(3)}) rotate(${lerpRR.toFixed(2)}deg)`;
+    leftEye.style.opacity = '1';
+    rightEye.style.opacity = '1';
+  }
+  animFrame = requestAnimationFrame(runEyeFrame);
 }
 
-function startEyeLoop(){if(animFrame)cancelAnimationFrame(animFrame);animFrame=requestAnimationFrame(runEyeFrame);}
-function stopEyeLoop(){if(animFrame){cancelAnimationFrame(animFrame);animFrame=null;}}
+function startEyeLoop(){if(!animFrame)animFrame=requestAnimationFrame(runEyeFrame);}
 
 function startIdle(){
-  stopWander();eyeMode='idle';statusEl.textContent='Idle';
+  stopWander();eyeMode='idle';statusEl.textContent=isWidgetActive?'Widget Active':'Idle';
   if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}
-  const mx=EYE_MAX_X,my=EYE_MAX_Y;
   const faceEl=document.querySelector('.face');
   wanderHandle=setInterval(()=>{
-    if(eyeMode!=='idle')return;
+    if(eyeMode!=='idle'||isWidgetActive)return;
     const rect=faceEl.getBoundingClientRect();
     const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
     const dx=clamp((mouseX-cx)/window.innerWidth*2,-1,1);
     const dy=clamp((mouseY-cy)/window.innerHeight*2,-1,1);
-    const ex=dx*mx,ey=dy*my;
-    const t=Date.now(),drift=2;
-    targetLX=ex+Math.sin(t/3000)*drift;targetLY=ey+Math.cos(t/4100)*drift;
-    targetRX=ex+Math.sin(t/3200)*drift;targetRY=ey+Math.cos(t/3900)*drift;
+    const ex=dx*18,ey=dy*22;
+    const t=Date.now();
+    targetLX=ex+Math.sin(t/3000)*2;targetLY=ey+Math.cos(t/4100)*2;
+    targetRX=ex+Math.sin(t/3200)*2;targetRY=ey+Math.cos(t/3900)*2;
     targetScale=1;targetLR=Math.sin(t/8000)*2;targetRR=Math.cos(t/8200)*2;
   },50);
 }
 
-function startThink(){
-  stopWander();eyeMode='think';statusEl.textContent='Thinking…';
-  const mx=EYE_MAX_X,my=EYE_MAX_Y;
-  wanderHandle=setInterval(()=>{
-    if(eyeMode!=='think')return;
-    const t=Date.now();
-    const x=Math.sin(t/2200)*mx*.7+Math.random()*4-2;
-    const y=Math.cos(t/2800)*my*.6+Math.random()*3-1.5;
-    targetLX=clamp(x,-mx,mx);targetLY=clamp(y,-my,my);
-    targetRX=clamp(x+Math.sin(t/1900)*3,-mx,mx);targetRY=clamp(y+Math.cos(t/2100)*3,-my,my);
-    targetScale=1;targetLR=Math.sin(t/3000)*5;targetRR=Math.cos(t/3200)*5;
-  },60);
-}
-
-function startJxoWander(){
-  eyeMode='jxo';statusEl.textContent='';
-  const mx=EYE_JXO_MAX;
-  wanderHandle=setInterval(()=>{
-    const t=Date.now();
-    const x=Math.sin(t/3000)*mx+Math.random()*2-1;
-    const y=Math.cos(t/4000)*mx*.7+Math.random()*1.5-.75;
-    targetLX=clamp(x,-mx,mx);targetLY=clamp(y,-mx,mx);
-    targetRX=clamp(x+Math.sin(t/2500)*2,-mx,mx);targetRY=clamp(y+Math.cos(t/2700)*2,-mx,mx);
-    targetScale=1;targetLR=Math.sin(t/8000)*2;targetRR=Math.cos(t/8200)*2;
-  },60);
-}
-
 function stopWander(){if(wanderHandle){clearInterval(wanderHandle);wanderHandle=null;}}
 
-function eyesNotice(dx,dy,scale=1,dur=600){
-  const prev=eyeMode;eyeMode='action';
-  targetLX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);targetLY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
-  targetRX=clamp(dx,-EYE_MAX_X,EYE_MAX_X);targetRY=clamp(dy,-EYE_MAX_Y,EYE_MAX_Y);
-  targetScale=scale;
-  setTimeout(()=>{if(eyeMode==='action'){eyeMode=prev;if(prev==='idle')startIdle();else if(prev==='think')startThink();}},dur);
-}
+/* ── MORPH EYES TOGETHER INTO WHITE BOX ── */
+function morphEyesTogether(open, widgetType, widgetData) {
+  if (open) {
+    isWidgetActive = true;
+    stopWander();
+    
+    // Animate eyes coalescing into center box
+    leftEye.style.transform = 'translate(35px, 0px) scale(0.1)';
+    rightEye.style.transform = 'translate(-35px, 0px) scale(0.1)';
+    leftEye.style.opacity = '0';
+    rightEye.style.opacity = '0';
 
-function eyesLookDown(){eyesNotice(0,10,1,500);}
-function eyesLookUp(){eyesNotice(0,-14,1.05,600);}
-function eyesLookLeft(){eyesNotice(-12,0,1,500);}
-function eyesWiden(){eyesNotice(0,0,1.18,700);}
-
-function applyEmotion(signal){
-  if(currentEmotionTimer)clearTimeout(currentEmotionTimer);
-  switch(signal){
-    case'HAPPY':targetLX=4;targetLY=-12;targetRX=4;targetRY=-12;targetScale=1.06;targetLR=3;targetRR=-3;break;
-    case'SAD':targetLX=-3;targetLY=12;targetRX=-3;targetRY=12;targetScale=0.94;targetLR=-3;targetRR=3;break;
-    case'SURPRISE':targetLX=0;targetLY=-16;targetRX=0;targetRY=-16;targetScale=1.2;targetLR=0;targetRR=0;break;
-    case'THINK':targetLX=-14;targetLY=-4;targetRX=-10;targetRY=-4;targetScale=1;targetLR=-3;targetRR=-2;break;
-    case'EXCITED':targetLX=6;targetLY=-14;targetRX=6;targetRY=-14;targetScale=1.12;targetLR=5;targetRR=-5;break;
-    case'CURIOUS':targetLX=-8;targetLY=-8;targetRX=-6;targetRY=-8;targetScale=1.03;targetLR=-4;targetRR=-2;break;
-    default:targetLX=0;targetLY=0;targetRX=0;targetRY=0;targetScale=1;targetLR=0;targetRR=0;
-  }
-  currentEmotionTimer=setTimeout(()=>{currentEmotionTimer=null;},1500);
-}
-
-/* ══════════════════════════════════════════════
-   TOAST & MODAL
-══════════════════════════════════════════════ */
-let toastTimer=null;
-function showToast(msg){toast.textContent=msg;toast.classList.add('show');if(toastTimer)clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);}
-
-function showModal(title,msg,confirmLabel,onConfirm){
-  $('modalTitle').textContent=title;$('modalMsg').textContent=msg;$('modalConfirm').textContent=confirmLabel||'Delete';
-  modalOverlay.classList.add('open');
-  const ok=()=>{modalOverlay.classList.remove('open');onConfirm();cleanup();};
-  const no=()=>{modalOverlay.classList.remove('open');cleanup();};
-  const bg=e=>{if(e.target===modalOverlay)no();};
-  function cleanup(){$('modalConfirm').removeEventListener('click',ok);$('modalCancel').removeEventListener('click',no);modalOverlay.removeEventListener('click',bg);}
-  $('modalConfirm').addEventListener('click',ok);$('modalCancel').addEventListener('click',no);modalOverlay.addEventListener('click',bg);
-}
-
-/* ══════════════════════════════════════════════
-   INTENT TOGGLE UI
-══════════════════════════════════════════════ */
-function updateIntentUI(){
-  const effective=intentPermEnabled&&!intentOneOff;
-  if(effective){
-    intentToggleBtn.classList.remove('off');
-    intentToggleBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Smart Intent: On`;
-  }else{
-    intentToggleBtn.classList.add('off');
-    intentToggleBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4 6H8v2h8V8zm0 4H8v2h8v-2zm-5 4H8v2h3v-2z"/></svg> Smart Intent: Off`;
-  }
-  intentTogglePerm.classList.toggle('on',intentPermEnabled);
-}
-
-intentToggleBtn.addEventListener('click',()=>{intentOneOff=!intentOneOff;updateIntentUI();});
-intentTogglePerm.addEventListener('click',()=>{
-  intentPermEnabled=!intentPermEnabled;
-  localStorage.setItem('ozo_intent_perm',JSON.stringify(intentPermEnabled));
-  intentOneOff=false;updateIntentUI();
-});
-
-/* ══════════════════════════════════════════════
-   MODEL / KEY / FEATURE SETTINGS UI
-══════════════════════════════════════════════ */
-function toggleEl(el,on){el.classList.toggle('on',on);}
-
-function initSettingsUI(){
-  // Model select
-  modelSelect.value=ALLOWED_MODELS.includes(SELECTED_MODEL)?SELECTED_MODEL:ALLOWED_MODELS[0];
-  modelSelect.addEventListener('change',()=>{
-    SELECTED_MODEL=modelSelect.value;localStorage.setItem('ozo_model',SELECTED_MODEL);showToast('Model set to '+SELECTED_MODEL);
-  });
-  // API key
-  apiKeyInput.value=CUSTOM_API_KEY;
-  apiKeyInput.addEventListener('change',()=>{
-    CUSTOM_API_KEY=apiKeyInput.value.trim();localStorage.setItem('ozo_custom_key',CUSTOM_API_KEY);
-    showToast(CUSTOM_API_KEY?'Custom API key saved.':'Custom key cleared — using shared key.');
-  });
-  // Toggles
-  toggleEl(toggleOffline,SETTINGS.offline);
-  toggleEl(toggleCamera,SETTINGS.camera);
-  toggleEl(toggleScreen,SETTINGS.screen);
-  toggleEl(toggleNotif,SETTINGS.notif);
-  toggleEl(togglePip,SETTINGS.pip);
-
-  toggleOffline.addEventListener('click',()=>{SETTINGS.offline=!SETTINGS.offline;toggleEl(toggleOffline,SETTINGS.offline);saveSettings();showToast('Offline mode '+(SETTINGS.offline?'on':'off'));});
-  toggleCamera.addEventListener('click',()=>{SETTINGS.camera=!SETTINGS.camera;toggleEl(toggleCamera,SETTINGS.camera);saveSettings();if(!SETTINGS.camera)stopHardwareStream('camera');});
-  toggleScreen.addEventListener('click',()=>{SETTINGS.screen=!SETTINGS.screen;toggleEl(toggleScreen,SETTINGS.screen);saveSettings();if(!SETTINGS.screen)stopHardwareStream('screen_share');});
-  toggleNotif.addEventListener('click',async()=>{
-    SETTINGS.notif=!SETTINGS.notif;
-    if(SETTINGS.notif&&'Notification'in window&&Notification.permission==='default'){try{await Notification.requestPermission();}catch{}}
-    toggleEl(toggleNotif,SETTINGS.notif);saveSettings();
-  });
-  togglePip.addEventListener('click',()=>{SETTINGS.pip=!SETTINGS.pip;toggleEl(togglePip,SETTINGS.pip);saveSettings();showToast('Auto-launch PiP '+(SETTINGS.pip?'on':'off'));});
-}
-
-/* ══════════════════════════════════════════════
-   EYE → WIDGET MORPH ENGINE
-   (base .eye CSS is untouched; morphing is purely additive
-   inline-transform work layered on top of the existing look)
-══════════════════════════════════════════════ */
-let widgetOpen=false;
-let currentWidget=null; // {type,data}
-let hwStreams={camera:null,screen_share:null};
-
-function faceBounds(){
-  const r=faceEl.getBoundingClientRect();
-  return {w:r.width,h:r.height};
-}
-
-function morphEyesTogether(on){
-  const eyeW=getComputedStyle(document.documentElement).getPropertyValue('--eye-w').trim();
-  const eyeH=getComputedStyle(document.documentElement).getPropertyValue('--eye-h').trim();
-  const gap=getComputedStyle(document.documentElement).getPropertyValue('--eye-gap').trim();
-  if(on){
-    // Slide the eyes together, flattening their inner corners so they read as one shape
-    leftEye.style.transition='transform 340ms cubic-bezier(.25,.46,.45,.94),border-radius 340ms ease';
-    rightEye.style.transition='transform 340ms cubic-bezier(.25,.46,.45,.94),border-radius 340ms ease';
-    const shift=(parseFloat(gap)/2)+parseFloat(eyeW)/2;
-    leftEye.style.transform=`translateX(${shift}px)`;
-    rightEye.style.transform=`translateX(${-shift}px)`;
-    leftEye.style.borderTopRightRadius='4px';leftEye.style.borderBottomRightRadius='4px';
-    rightEye.style.borderTopLeftRadius='4px';rightEye.style.borderBottomLeftRadius='4px';
-    eyeWidgetCanvas.style.width=(parseFloat(eyeW)*2+parseFloat(gap))+'px';
-    eyeWidgetCanvas.style.height=(parseFloat(eyeH))+'px';
+    // Expand merged white box container
     eyeWidgetCanvas.classList.add('open');
-    setTimeout(()=>eyeWidgetCanvas.classList.add('content-in'),260);
-  }else{
-    eyeWidgetCanvas.classList.remove('content-in','open');
-    leftEye.style.transform='';rightEye.style.transform='';
-    leftEye.style.borderTopRightRadius='';leftEye.style.borderBottomRightRadius='';
-    rightEye.style.borderTopLeftRadius='';rightEye.style.borderBottomLeftRadius='';
-    setTimeout(()=>{eyeWidgetCanvas.style.width='0';eyeWidgetCanvas.style.height='0';},240);
+    statusEl.textContent = 'Widget Active';
+
+    // Render widget payload
+    renderWidgetContent(widgetType, widgetData);
+    setTimeout(() => {
+      eyeWidgetCanvas.classList.add('content-in');
+    }, 100);
+  } else {
+    closeEyeWidget();
   }
 }
 
-function closeWidget(){
-  if(!widgetOpen)return;
-  widgetOpen=false;currentWidget=null;
-  morphEyesTogether(false);
-  wcInner.innerHTML='';
-  stopHardwareStream('camera');stopHardwareStream('screen_share');
-  if(musicAudio){musicAudio.pause();}
+function closeEyeWidget() {
+  isWidgetActive = false;
+  eyeWidgetCanvas.classList.remove('content-in');
+  eyeWidgetCanvas.classList.remove('open');
+  
+  // Restore eyes
+  leftEye.style.opacity = '1';
+  rightEye.style.opacity = '1';
+  targetLX = 0; targetLY = 0; targetRX = 0; targetRY = 0;
+  startIdle();
 }
 
-function openOrUpdateWidget(widget){
-  if(!widget||widget.type==='none'){return;}
-  if(widget.action==='close'){closeWidget();return;}
-  currentWidget=widget;
-  if(!widgetOpen){widgetOpen=true;morphEyesTogether(true);}
-  renderWidget(widget);
-  OzoMCP.emit('widget:state',{type:widget.type,data:widget.data});
+/* ══════════════════════════════════════════════
+   WIDGET RENDERERS (Clean White BG & Vibrant Colors)
+══════════════════════════════════════════════ */
+function renderWidgetContent(type, data = {}) {
+  wcInner.innerHTML = '';
+
+  if (type === 'calendar' || type === 'date') {
+    renderCalendarWidget();
+  } else if (type === 'time') {
+    renderTimeWidget();
+  } else if (type === 'tictactoe') {
+    renderTicTacToeWidget();
+  } else if (type === 'weather') {
+    renderWeatherWidget(data);
+  } else if (type === 'dynamic' && data.html) {
+    renderDynamicHTMLWidget(data.html);
+  } else {
+    renderDefaultWidget(data);
+  }
 }
 
-function widgetHeaderHtml(title,iconSvg){
-  return `<div class="wc-header"><div class="wc-title">${iconSvg||''}${title}</div><button class="wc-close" id="wcCloseBtn" title="Close">
-    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button></div>`;
-}
-function wireWidgetClose(){$('wcCloseBtn')?.addEventListener('click',()=>{closeWidget();});}
+function renderCalendarWidget() {
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth(), today = now.getDate();
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
 
-function renderWidget(widget){
-  const d=widget.data||{};
-  if(widget.type==='weather')return renderWeatherWidget(d);
-  if(widget.type==='music')return renderMusicWidget(d);
-  if(widget.type==='dynamic')return renderDynamicWidget(d);
-  if(widget.type==='camera'||widget.type==='screen_share')return renderHardwareWidget(widget.type,d);
-}
+  let daysHtml = '';
+  for (let i = 0; i < firstDay; i++) daysHtml += `<div class="wgt-cal-cell other"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday = d === today ? 'today' : '';
+    daysHtml += `<div class="wgt-cal-cell ${isToday}">${d}</div>`;
+  }
 
-function renderWeatherWidget(d){
-  wcInner.innerHTML=`
-    ${widgetHeaderHtml(d.location||'Weather',`<svg viewBox="0 0 24 24" style="width:15px;height:15px;fill:currentColor"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>`)}
+  wcInner.innerHTML = `
+    <div class="wc-header">
+      <div class="wc-title">
+        <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:#f59e0b"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+        Calendar
+      </div>
+    </div>
     <div class="wc-body">
-      <div class="wgt-weather-main">
-        <div>
-          <div class="wgt-weather-temp">${d.tempF??d.tempC??'--'}${d.tempF!=null?'°F':d.tempC!=null?'°C':''}</div>
-          <div class="wgt-weather-desc">${d.condition||''}</div>
+      <div class="wgt-cal">
+        <div class="wgt-cal-hdr">
+          <span>${monthNames[month]} ${year}</span>
+        </div>
+        <div class="wgt-cal-grid" style="margin-top:8px">
+          <div class="wgt-cal-day-hdr">Su</div><div class="wgt-cal-day-hdr">Mo</div>
+          <div class="wgt-cal-day-hdr">Tu</div><div class="wgt-cal-day-hdr">We</div>
+          <div class="wgt-cal-day-hdr">Th</div><div class="wgt-cal-day-hdr">Fr</div>
+          <div class="wgt-cal-day-hdr">Sa</div>
+          ${daysHtml}
         </div>
       </div>
-      <div class="wgt-weather-loc">${d.location||''}</div>
+    </div>
+  `;
+}
+
+function renderTimeWidget() {
+  wcInner.innerHTML = `
+    <div class="wgt-time-card">
+      <svg class="wgt-time-sun" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06z"/></svg>
+      <div class="wgt-time-val" id="wgtClockVal">--:--:--</div>
+      <div class="wgt-time-date" id="wgtClockDate">--</div>
+    </div>
+  `;
+
+  function updateClock() {
+    const clockEl = document.getElementById('wgtClockVal');
+    const dateEl = document.getElementById('wgtClockDate');
+    if (clockEl) {
+      const now = new Date();
+      clockEl.textContent = now.toLocaleTimeString();
+      dateEl.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  }
+  updateClock();
+  const timer = setInterval(updateClock, 1000);
+}
+
+function renderTicTacToeWidget() {
+  wcInner.innerHTML = `
+    <div class="wc-header">
+      <div class="wc-title">Tic-Tac-Toe</div>
+    </div>
+    <div class="wc-body" style="align-items:center">
+      <div class="wgt-ttt-status" id="tttStatus">Player X's turn</div>
+      <div class="wgt-ttt-board" id="tttBoard"></div>
+      <button class="wgt-ttt-reset" onclick="initTTT()">Reset Game</button>
+    </div>
+  `;
+
+  window.tttState = Array(9).fill('');
+  window.tttTurn = 'X';
+
+  window.initTTT = function() {
+    window.tttState = Array(9).fill('');
+    window.tttTurn = 'X';
+    const board = document.getElementById('tttBoard');
+    if (!board) return;
+    board.innerHTML = '';
+    document.getElementById('tttStatus').textContent = "Player X's turn";
+    for (let i = 0; i < 9; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'wgt-ttt-btn';
+      btn.onclick = () => window.makeTTTMove(i);
+      board.appendChild(btn);
+    }
+  };
+
+  window.makeTTTMove = function(idx) {
+    if (window.tttState[idx] !== '') return;
+    window.tttState[idx] = window.tttTurn;
+    const btns = document.querySelectorAll('.wgt-ttt-btn');
+    btns[idx].textContent = window.tttTurn;
+    btns[idx].classList.add(window.tttTurn.toLowerCase());
+
+    if (checkTTTWin()) {
+      document.getElementById('tttStatus').textContent = `Player ${window.tttTurn} Wins! 🎉`;
+      return;
+    }
+    window.tttTurn = window.tttTurn === 'X' ? 'O' : 'X';
+    document.getElementById('tttStatus').textContent = `Player ${window.tttTurn}'s turn`;
+  };
+
+  function checkTTTWin() {
+    const s = window.tttState;
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    return wins.some(([a,b,c]) => s[a] && s[a] === s[b] && s[a] === s[c]);
+  }
+
+  window.initTTT();
+}
+
+function renderWeatherWidget(data = {}) {
+  wcInner.innerHTML = `
+    <div class="wc-header">
+      <div class="wc-title">Weather Forecast</div>
+    </div>
+    <div class="wc-body">
+      <div class="wgt-weather-top">
+        <div>
+          <div class="wgt-weather-temp">${data.temp || '72°F'}</div>
+          <div class="wgt-weather-desc">${data.condition || 'Sunny & Clear'}</div>
+        </div>
+        <svg class="wgt-weather-sun" viewBox="0 0 24 24"><path fill="currentColor" d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1z"/></svg>
+      </div>
       <div class="wgt-weather-grid">
-        <div class="wgt-weather-chip"><div class="k">High</div><div class="v">${d.high??'--'}</div></div>
-        <div class="wgt-weather-chip"><div class="k">Low</div><div class="v">${d.low??'--'}</div></div>
-        <div class="wgt-weather-chip"><div class="k">Humidity</div><div class="v">${d.humidity??'--'}${d.humidity!=null?'%':''}</div></div>
+        <div class="wgt-weather-chip"><div class="k">Humidity</div><div class="v">${data.humidity || '45%'}</div></div>
+        <div class="wgt-weather-chip"><div class="k">Wind</div><div class="v">${data.wind || '8 mph'}</div></div>
+        <div class="wgt-weather-chip"><div class="k">UV Index</div><div class="v">${data.uv || 'High'}</div></div>
       </div>
-    </div>`;
-  wireWidgetClose();
+    </div>
+  `;
 }
 
-let musicAudio=null;
-function renderMusicWidget(d){
-  wcInner.innerHTML=`
-    ${widgetHeaderHtml('Now Playing')}
+function renderDynamicHTMLWidget(htmlString) {
+  const wrap = document.createElement('div');
+  wrap.className = 'wgt-dyn-wrap';
+  wrap.innerHTML = htmlString;
+  wcInner.appendChild(wrap);
+
+  // Execute embedded scripts inside dynamic widgets
+  const scripts = wrap.querySelectorAll('script');
+  scripts.forEach(s => {
+    const newScript = document.createElement('script');
+    if (s.src) newScript.src = s.src;
+    else newScript.textContent = s.textContent;
+    document.body.appendChild(newScript);
+    document.body.removeChild(newScript);
+  });
+}
+
+function renderDefaultWidget(data) {
+  wcInner.innerHTML = `
+    <div class="wc-header">
+      <div class="wc-title">${data.title || 'Ozo Widget'}</div>
+    </div>
     <div class="wc-body">
-      <div class="wgt-music-art"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>
-      <div class="wgt-music-title">${d.title||'Untitled track'}</div>
-      <div class="wgt-music-sub">${d.artist||''}</div>
-      <div class="wgt-music-controls">
-        <button class="wgt-music-btn small" id="wgtMPrev"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
-        <button class="wgt-music-btn" id="wgtMPlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
-        <button class="wgt-music-btn small" id="wgtMNext"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
-      </div>
-      <input type="range" class="wgt-music-seek" id="wgtMSeek" min="0" max="100" value="0"/>
-      <div class="wgt-music-time"><span id="wgtMCur">0:00</span><span id="wgtMDur">0:00</span></div>
-    </div>`;
-  wireWidgetClose();
-  if(!musicAudio){musicAudio=new Audio();musicAudio.crossOrigin='anonymous';}
-  const src=d.trackUrl||'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
-  if(musicAudio.src!==src){musicAudio.src=src;}
-  const playBtn=$('wgtMPlay'),seek=$('wgtMSeek'),cur=$('wgtMCur'),dur=$('wgtMDur');
-  const fmt=s=>{if(!isFinite(s))return'0:00';const m=Math.floor(s/60),ss=Math.floor(s%60);return m+':'+String(ss).padStart(2,'0');};
-  function setPlayIcon(playing){playBtn.innerHTML=playing?'<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>':'<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';}
-  const wantsPlay=d.playing!==false;
-  playBtn.addEventListener('click',()=>{
-    if(musicAudio.paused){musicAudio.play().catch(()=>{});setPlayIcon(true);OzoMCP.emit('music:play',{title:d.title});}
-    else{musicAudio.pause();setPlayIcon(false);OzoMCP.emit('music:pause',{title:d.title});}
-  });
-  $('wgtMPrev').addEventListener('click',()=>OzoMCP.emit('music:prev',{}));
-  $('wgtMNext').addEventListener('click',()=>OzoMCP.emit('music:next',{}));
-  musicAudio.ontimeupdate=()=>{if(musicAudio.duration){seek.value=(musicAudio.currentTime/musicAudio.duration)*100;cur.textContent=fmt(musicAudio.currentTime);dur.textContent=fmt(musicAudio.duration);}};
-  seek.addEventListener('input',()=>{if(musicAudio.duration)musicAudio.currentTime=(seek.value/100)*musicAudio.duration;});
-  if(wantsPlay){musicAudio.play().then(()=>setPlayIcon(true)).catch(()=>setPlayIcon(false));}else{setPlayIcon(false);}
-}
-
-function renderDynamicWidget(d){
-  const fields=(d.fields||[]).map(f=>`<div class="wgt-dyn-field"><span class="fk">${f.label}</span><span class="fv">${f.value}</span></div>`).join('');
-  const actions=(d.actions||[]).map((a,i)=>`<button class="wgt-dyn-btn" data-act="${i}">${a.label}</button>`).join('');
-  wcInner.innerHTML=`
-    ${widgetHeaderHtml(d.title||'Ozo')}
-    <div class="wc-body">
-      ${d.description?`<div style="font-size:12.5px;color:#5b7fa6">${d.description}</div>`:''}
-      ${fields}
-      <div class="wgt-dyn-actions">${actions}</div>
-    </div>`;
-  wireWidgetClose();
-  wcInner.querySelectorAll('.wgt-dyn-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const a=(d.actions||[])[+btn.dataset.act];
-      if(a)OzoMCP.emit('widget:action',{label:a.label,title:d.title});
-    });
-  });
-}
-
-function renderHardwareWidget(type,d){
-  const label=type==='camera'?'Camera':'Screen Share';
-  wcInner.innerHTML=`
-    ${widgetHeaderHtml(label)}
-    <div class="wc-body">
-      <video id="hwVideo" class="wgt-hw-video" autoplay muted playsinline></video>
-      <button class="wgt-hw-stop" id="hwStopBtn">Stop ${label}</button>
-    </div>`;
-  wireWidgetClose();
-  const video=$('hwVideo');
-  const stream=hwStreams[type];
-  if(stream)video.srcObject=stream;
-  $('hwStopBtn').addEventListener('click',()=>{stopHardwareStream(type);closeWidget();});
+      <p style="font-size:13px;color:#334155">${data.text || 'Widget loaded successfully.'}</p>
+    </div>
+  `;
 }
 
 /* ══════════════════════════════════════════════
-   WEB MCP / EVENT BRIDGE
-   Lets widget interactions flow back into the model's context, and lets
-   the model's client-side effects trigger DOM/JS actions programmatically.
+   FILE SYSTEM ACCESS API & WEBMCP INTEGRATION
 ══════════════════════════════════════════════ */
-const OzoMCP=(()=>{
-  const listeners={};
-  function on(evt,fn){(listeners[evt]=listeners[evt]||[]).push(fn);}
-  function emit(evt,payload){
-    (listeners[evt]||[]).forEach(fn=>{try{fn(payload);}catch(e){console.error('MCP handler error',e);}});
-    // Feed the interaction back into the conversation's context silently,
-    // so the next model turn is aware of what happened in the widget.
-    pendingContextEvents.push({evt,payload,ts:Date.now()});
-  }
-  return{on,emit};
-})();
-let pendingContextEvents=[];
-function drainContextEvents(){
-  if(!pendingContextEvents.length)return'';
-  const s=pendingContextEvents.map(e=>`[event] ${e.evt} ${JSON.stringify(e.payload)}`).join('\n');
-  pendingContextEvents=[];
-  return `\n\n(Recent widget/client events for context:\n${s}\n)`;
-}
-
-/* ══════════════════════════════════════════════
-   HARDWARE CONTROLLERS
-══════════════════════════════════════════════ */
-async function requestCamera(){
-  if(!SETTINGS.camera){showToast('Camera is off in Settings.');return;}
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:true});
-    hwStreams.camera=stream;
-    openOrUpdateWidget({type:'camera',action:'open',data:{}});
-  }catch(e){console.error(e);showToast('Camera access denied.');}
-}
-async function requestScreenShare(){
-  if(!SETTINGS.screen){showToast('Screen share is off in Settings.');return;}
-  try{
-    const stream=await navigator.mediaDevices.getDisplayMedia({video:true});
-    hwStreams.screen_share=stream;
-    openOrUpdateWidget({type:'screen_share',action:'open',data:{}});
-    stream.getVideoTracks()[0].addEventListener('ended',()=>{stopHardwareStream('screen_share');closeWidget();});
-  }catch(e){console.error(e);showToast('Screen share cancelled.');}
-}
-function stopHardwareStream(type){
-  const s=hwStreams[type];
-  if(s){s.getTracks().forEach(t=>t.stop());hwStreams[type]=null;}
-}
-function sendOzoNotification(title,body){
-  if(!SETTINGS.notif){return;}
-  if(!('Notification'in window)){showToast(title+': '+body);return;}
-  if(Notification.permission==='granted'){
-    if(document.visibilityState!=='visible')new Notification(title,{body});
-  }else if(Notification.permission!=='denied'){
-    Notification.requestPermission().then(p=>{if(p==='granted'&&document.visibilityState!=='visible')new Notification(title,{body});});
-  }
-}
-function handleHardwareRequest(hw){
-  if(!hw||hw.type==='none')return;
-  if(hw.type==='camera')requestCamera();
-  else if(hw.type==='screen_share')requestScreenShare();
-  else if(hw.type==='notification')sendOzoNotification('Ozo',stripSignals(lastSpeechForNotif||'').slice(0,120));
-}
-
-/* ══════════════════════════════════════════════
-   DOCUMENT PICTURE-IN-PICTURE
-══════════════════════════════════════════════ */
-let pipWindow=null;
-async function enterDocPiP(){
-  if(!('documentPictureInPicture'in window)){showToast('Picture-in-Picture not supported in this browser.');return;}
-  if(pipWindow){return;}
-  try{
-    pipWindow=await window.documentPictureInPicture.requestWindow({width:340,height:420});
-    [...document.styleSheets].forEach(sheet=>{
-      try{
-        const css=[...sheet.cssRules].map(r=>r.cssText).join('\n');
-        const style=pipWindow.document.createElement('style');style.textContent=css;pipWindow.document.head.appendChild(style);
-      }catch(e){
-        if(sheet.href){const link=pipWindow.document.createElement('link');link.rel='stylesheet';link.href=sheet.href;pipWindow.document.head.appendChild(link);}
-      }
-    });
-    pipWindow.document.body.style.margin='0';
-    pipWindow.document.body.classList.add('ozo-pip');
-
-    const pipRoot=document.createElement('div');pipRoot.id='pipRoot';
-    const faceZoneClone=$('faceZone');
-    const inputBarClone=$('inputBar');
-    // Move (not clone) the live nodes so state/listeners keep working
-    pipRoot.appendChild(faceZoneClone);
-    const chatMini=document.createElement('div');chatMini.style.cssText='flex:1;overflow-y:auto;';
-    chatMini.appendChild($('chatWrap'));
-    pipRoot.appendChild(chatMini);
-    pipRoot.appendChild(inputBarClone);
-    pipWindow.document.body.appendChild(pipRoot);
-
-    pipBtn.classList.add('pip-active');
-    pipWindow.addEventListener('pagehide',()=>{
-      // Move everything back into the main document
-      const main=$('main');
-      main.insertBefore(faceZoneClone,main.firstChild);
-      main.insertBefore(chatMini.firstChild,$('inputBar'));
-      main.appendChild(inputBarClone);
-      pipBtn.classList.remove('pip-active');
-      pipWindow=null;
-    });
-  }catch(e){console.error('PiP error',e);showToast('Could not open Picture-in-Picture.');pipWindow=null;}
-}
-pipBtn.addEventListener('click',()=>{
-  if(pipWindow){pipWindow.close();}else{enterDocPiP();}
-});
-
-/* ══════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════ */
-function renderSidebar(){
-  chatList.innerHTML='';
-  const sessions=getSessions();
-  if(!sessions.length){chatList.innerHTML='<div style="padding:14px;font-size:12.5px;color:rgba(255,255,255,.5);text-align:center">No saved chats</div>';return;}
-  sessions.forEach(s=>{
-    const item=document.createElement('div');item.className='chat-item'+(s.id===currentChatId?' active':'');
-    const titleEl=document.createElement('div');titleEl.className='ci-title';titleEl.textContent=s.title||'Untitled';
-    const acts=document.createElement('div');acts.className='ci-acts';
-    const ren=mkIconBtn(`<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,'Rename');
-    ren.addEventListener('click',e=>{e.stopPropagation();startRename(item,titleEl,s.id);});
-    const del=mkIconBtn(`<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`,'Delete','danger');
-    del.addEventListener('click',e=>{e.stopPropagation();showModal('Delete chat','Delete "'+s.title+'"?','Delete',()=>{deleteSession(s.id);if(currentChatId===s.id)startNewChat();else renderSidebar();});});
-    acts.append(ren,del);item.append(titleEl,acts);
-    item.addEventListener('click',()=>{eyesLookLeft();loadChat(s.id);});
-    chatList.appendChild(item);
-  });
-}
-
-function mkIconBtn(svg,title,extra=''){
-  const b=document.createElement('button');b.className='icon-btn'+(extra?' '+extra:'');b.title=title;b.innerHTML=svg;return b;
-}
-
-function startRename(item,titleEl,id){
-  const inp=document.createElement('input');inp.className='ci-input';inp.value=titleEl.textContent;
-  item.replaceChild(inp,titleEl);inp.focus();inp.select();
-  const done=()=>{const v=inp.value.trim()||'Untitled';const s=getSession(id);if(s){s.title=v;upsertSession(s);}item.replaceChild(titleEl,inp);titleEl.textContent=v;renderSidebar();};
-  inp.addEventListener('blur',done);
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=titleEl.textContent;inp.blur();}});
-}
-
-/* ══════════════════════════════════════════════
-   CHAT MANAGEMENT
-══════════════════════════════════════════════ */
-function startNewChat(){
-  currentChatId=newId();
-  upsertSession({id:currentChatId,title:'New Chat',history:[],messages:[],createdAt:Date.now()});
-  renderChatFromSession(getSession(currentChatId));renderSidebar();
-}
-function loadChat(id){currentChatId=id;const s=getSession(id);if(s){renderChatFromSession(s);renderSidebar();}}
-
-function renderChatFromSession(s){
-  chatEl.innerHTML='';
-  if(!s?.messages?.length){chatEl.appendChild(buildWelcome());return;}
-  s.messages.forEach(m=>{
-    if(m.role==='user')appendUserBubble(m.text,false);
-    else if(m.role==='ozo')appendOzoBubble(m.text,true,false);
-    else if(m.role==='action')appendActionBubble(m.label,m.url,m.iconType,false);
-  });
-  scrollToBottom();
-}
-
-function buildWelcome(){
-  const w=document.createElement('div');w.id='welcome';
-  w.innerHTML=`
-    <h2>Hey, I'm Ozo</h2>
-    <p>Ask me anything — I can chat, search, and open websites.</p>
-    <div class="suggestion-grid">
-      <div class="suggestion" data-q="Search for pie recipes"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Search pie recipes</div>
-      <div class="suggestion" data-q="Open YouTube"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Open YouTube</div>
-      <div class="suggestion" data-q="Take me to Gmail"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Open Gmail</div>
-      <div class="suggestion" data-q="What is the meaning of life?"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>Meaning of life</div>
-      <div class="suggestion" data-q="Write me a haiku about rain"><svg viewBox="0 0 24 24"><path d="M6 19v2H4v-2h2zm4 0v2H8v-2h2zm4 0v2h-2v-2h2zm4 0v2h-2v-2h2zM4 3h16l-5 9H9L4 3zm2.83 2L9.5 10h5l2.67-5H6.83z"/></svg>Haiku about rain</div>
-      <div class="suggestion" data-q="Open a YouTube search for lofi music"><svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>Lofi on YouTube</div>
-    </div>`;
-  w.querySelectorAll('.suggestion').forEach(el=>el.addEventListener('click',()=>handleInput(el.dataset.q)));
-  return w;
-}
-
-function saveMsg(role,data){
-  const s=getSession(currentChatId);if(!s)return;
-  s.messages=s.messages||[];s.messages.push({role,...data,ts:Date.now()});
-  if(role==='user'&&s.title==='New Chat'&&data.text)s.title=data.text.slice(0,44)+(data.text.length>44?'…':'');
-  upsertSession(s);renderSidebar();
-}
-function saveHistory(u,a){
-  const s=getSession(currentChatId);if(!s)return;
-  s.history=s.history||[];
-  s.history.push({role:'user',content:u},{role:'assistant',content:a});
-  if(s.history.length>40)s.history=s.history.slice(-40);
-  upsertSession(s);
-}
-
-/* ══════════════════════════════════════════════
-   UI BUILDERS
-══════════════════════════════════════════════ */
-function hideWelcome(){document.getElementById('welcome')?.remove();}
-function scrollToBottom(){chatEl.scrollTop=chatEl.scrollHeight;}
-
-function appendUserBubble(text,save=true){
-  hideWelcome();
-  const row=document.createElement('div');row.className='msg-row user';
-  const wrap=document.createElement('div');wrap.className='msg-wrap';
-  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='You';
-  const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;
-  const acts=document.createElement('div');acts.className='msg-actions';
-  acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(text)));
-  wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
-  scrollToBottom();if(save)saveMsg('user',{text});
-}
-
-function appendOzoBubble(text,isMarkdown=true,save=true){
-  hideWelcome();
-  const row=document.createElement('div');row.className='msg-row ozo';
-  const wrap=document.createElement('div');wrap.className='msg-wrap';
-  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
-  const bubble=document.createElement('div');bubble.className='bubble';
-  const clean=stripSignals(text);
-  if(isMarkdown)bubble.innerHTML=marked.parse(clean||'');else bubble.textContent=clean||'';
-  addCopyCodeBtns(bubble);
-  const acts=document.createElement('div');acts.className='msg-actions';
-  acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(clean)));
-  wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
-  scrollToBottom();if(save)saveMsg('ozo',{text});
-  return{row,bubble,acts};
-}
-
-function appendActionBubble(label,url,iconType='globe',save=true){
-  hideWelcome();
-  const row=document.createElement('div');row.className='msg-row ozo';
-  const wrap=document.createElement('div');wrap.className='msg-wrap';
-  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
-  const bubble=document.createElement('div');bubble.className='bubble';
-  const icon=iconType==='search'?ICONS.search:ICONS.globe;
-  bubble.innerHTML=`Opened <a class="action-chip" href="${url}" target="_blank" rel="noopener noreferrer">${icon}${label}</a>`;
-  wrap.append(lbl,bubble);row.appendChild(wrap);chatEl.appendChild(row);
-  scrollToBottom();if(save)saveMsg('action',{label,url,iconType});
-}
-
-function addTypingIndicator(){
-  hideWelcome();
-  const row=document.createElement('div');row.className='msg-row ozo';row.id='typing-ind';
-  const wrap=document.createElement('div');wrap.className='msg-wrap';
-  const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
-  const bubble=document.createElement('div');bubble.className='bubble';
-  bubble.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
-  wrap.append(lbl,bubble);row.appendChild(wrap);chatEl.appendChild(row);scrollToBottom();
-}
-function removeTypingIndicator(){document.getElementById('typing-ind')?.remove();}
-
-function makeActBtn(label,iconSvg,onClick,extraClass=''){
-  const btn=document.createElement('button');btn.className='msg-act-btn'+(extraClass?' '+extraClass:'');
-  btn.innerHTML=iconSvg+' '+label;btn.addEventListener('click',onClick);return btn;
-}
-function addCopyCodeBtns(bubble){
-  bubble.querySelectorAll('pre').forEach(pre=>{
-    const btn=document.createElement('button');btn.className='copy-code-btn';btn.textContent='Copy';
-    btn.addEventListener('click',()=>{copyText((pre.querySelector('code')||pre).textContent);btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1800);});
-    pre.style.position='relative';pre.appendChild(btn);
-  });
-}
-function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast('Copied!'));}
-
-/* ══════════════════════════════════════════════
-   ICONS
-══════════════════════════════════════════════ */
-const ICONS={
-  copy:`<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`,
-  regen:`<svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`,
-  globe:`<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>`,
-  search:`<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:currentColor;flex-shrink:0"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`,
-};
-
-/* ══════════════════════════════════════════════
-   EMOTION SIGNAL PARSING
-══════════════════════════════════════════════ */
-const SIGNAL_RE=/\[OZO:(HAPPY|SAD|SURPRISE|THINK|EXCITED|CURIOUS|NEUTRAL)\]/g;
-function stripSignals(text){return(text||'').replace(SIGNAL_RE,'');}
-function processSignalsInChunk(chunk){
-  let m;const re=new RegExp(SIGNAL_RE.source,'g');
-  while((m=re.exec(chunk))!==null){applyEmotion(m[1]);}
-}
-
-/* ══════════════════════════════════════════════
-   OPENROUTER / OFFLINE MODEL CALL LAYER
-══════════════════════════════════════════════ */
-function getHeaders(){
-  return {'Content-Type':'application/json','Authorization':`Bearer ${effectiveApiKey()}`,'HTTP-Referer':window.location.href,'X-Title':'Ozo'};
-}
-
-/* Streaming JSON-object call against OpenRouter. Deltas are fed to
-   onPartial as they arrive so the UI can show the "speech" field live
-   instead of waiting for the whole object to finish — this is the
-   single biggest perceived-speed win. */
-async function streamOpenRouterJSON(messages,onPartial,signal){
-  const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),signal,body:JSON.stringify({
-    model:SELECTED_MODEL,stream:true,response_format:{type:'json_object'},messages
-  })});
-  if(!resp.ok)throw new Error(`HTTP ${resp.status}`);
-  let accumulated='';
-  const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
-  while(true){
-    const{done,value}=await reader.read();if(done)break;
-    buffer+=decoder.decode(value,{stream:true});
-    const lines=buffer.split(/\r?\n/);buffer=lines.pop()||'';
-    for(const line of lines){
-      if(!line.trim())continue;
-      const piece=extractDelta(line);
-      if(piece!==null){accumulated+=piece;onPartial(accumulated);}
-    }
-  }
-  return accumulated;
-}
-
-/* Chrome's on-device model (window.ai), used when Offline Mode is on.
-   No network traffic leaves the browser. */
-async function callOfflineModel(messages){
-  if(!('ai'in window)||typeof window.ai?.createTextSession!=='function'){
-    throw new Error('window.ai is not available in this browser.');
-  }
-  const session=await window.ai.createTextSession();
-  const sys=messages.find(m=>m.role==='system')?.content||'';
-  const rest=messages.filter(m=>m.role!=='system').map(m=>`${m.role}: ${m.content}`).join('\n');
-  const result=await session.prompt(`${sys}\n\n${rest}\n\nassistant:`);
-  session.destroy?.();
-  return result;
-}
-
-function extractDelta(line){
-  const raw=line.replace(/^data:\s*/,'').trim();
-  if(!raw||raw==='[DONE]')return null;
-  try{return JSON.parse(raw)?.choices?.[0]?.delta?.content??null;}catch{return null;}
-}
-
-/* ══════════════════════════════════════════════
-   UNIFIED TURN — one model call, one strict JSON schema
-   drives speech + emotion + widget morph + hardware + navigation
-══════════════════════════════════════════════ */
-function mapEmotion(e){
-  switch((e||'').toLowerCase()){
-    case'happy':return'HAPPY';
-    case'thinking':return'THINK';
-    case'surprised':return'SURPRISE';
-    case'focusing':return'CURIOUS';
-    default:return'NEUTRAL';
-  }
-}
-
-function parseOzoJSON(raw){
-  try{
-    const cleaned=(raw||'').replace(/```[a-z]*\n?/gi,'').replace(/```/g,'').trim();
-    const parsed=JSON.parse(cleaned);
-    return{
-      speech:parsed.speech??'',
-      emotion:parsed.emotion??'neutral',
-      widget:parsed.widget??{type:'none'},
-      hardware_request:parsed.hardware_request??{type:'none'},
-      navigation:parsed.navigation??{type:'none'}
-    };
-  }catch(e){
-    console.warn('Ozo JSON parse failed, treating as plain speech',e,raw);
-    return{speech:raw||"Sorry, I couldn't quite process that.",emotion:'neutral',widget:{type:'none'},hardware_request:{type:'none'},navigation:{type:'none'}};
-  }
-}
-
-/* Crude but cheap partial-JSON reader: pulls out whatever of the
-   "speech" string value has streamed in so far, unescaped, so the
-   bubble can render live token-by-token even before the JSON closes. */
-function partialSpeechFromRaw(raw){
-  const m=raw.match(/"speech"\s*:\s*"((?:\\.|[^"\\])*)/);
-  if(!m)return'';
-  return m[1].replace(/\\n/g,'\n').replace(/\\"/g,'"').replace(/\\t/g,'\t').replace(/\\\\/g,'\\');
-}
-
-/* ══════════════════════════════════════════════
-   NAVIGATION ACTIONS (open_url / search)
-══════════════════════════════════════════════ */
-function doOpenUrl(url,label){eyesLookUp();statusEl.textContent=`Opening ${label}…`;setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(label,url,'globe');applyEmotion('EXCITED');setTimeout(startIdle,800);},400);}
-function doSearch(q){const url=`https://www.google.com/search?q=${encodeURIComponent(q)}`;eyesLookUp();statusEl.textContent='Searching…';setTimeout(()=>{window.open(url,'_blank','noopener,noreferrer');appendActionBubble(`Search: ${q}`,url,'search');applyEmotion('CURIOUS');setTimeout(startIdle,800);},400);}
-
-/* ══════════════════════════════════════════════
-   EXPORT
-══════════════════════════════════════════════ */
-function exportChat(){
-  const s=getSession(currentChatId);
-  if(!s?.messages?.length){showToast('Nothing to export.');return;}
-  let md=`# ${s.title}\n_Ozo by Jxo · ${new Date().toLocaleString()}_\n\n---\n\n`;
-  s.messages.forEach(m=>{
-    if(m.role==='user')md+=`**You:** ${m.text}\n\n`;
-    else if(m.role==='ozo')md+=`**Ozo:** ${stripSignals(m.text)}\n\n`;
-    else if(m.role==='action')md+=`**Ozo opened:** [${m.label}](${m.url})\n\n`;
-  });
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'}));
-  a.download=`ozo-${s.title.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.md`;a.click();
-  showToast('Exported!');
-}
-
-/* ══════════════════════════════════════════════
-   MAIN HANDLER
-   Streams the reply in live (speech shows token-by-token as it's
-   generated); widget/hardware/emotion/navigation apply once the full
-   JSON object closes. Abort actually cancels the in-flight fetch now.
-══════════════════════════════════════════════ */
-let lastSpeechForNotif='';
-
-async function handleInput(text){
-  if(!text.trim()||isStreaming)return;
-  sendBtn.disabled=true;isStreaming=true;textarea.style.height='auto';
-  appendUserBubble(text);startThink();eyesNotice(0,6,1,300);
-  addTypingIndicator();statusEl.textContent='Thinking…';
-  sendBtn.style.display='none';stopBtn.style.display='flex';
-  abortController=new AbortController();
-
-  let row=null,bubble=null,acts=null,bubbleCreated=false,shown='';
-  function ensureBubble(){
-    if(bubbleCreated)return;
-    removeTypingIndicator();hideWelcome();
-    row=document.createElement('div');row.className='msg-row ozo';
-    const wrap=document.createElement('div');wrap.className='msg-wrap';
-    const lbl=document.createElement('div');lbl.className='msg-label';lbl.textContent='Ozo';
-    bubble=document.createElement('div');bubble.className='bubble';
-    acts=document.createElement('div');acts.className='msg-actions';
-    wrap.append(lbl,bubble,acts);row.appendChild(wrap);chatEl.appendChild(row);
-    bubbleCreated=true;
-  }
-
-  try{
-    const s=getSession(currentChatId);
-    const sys=buildSystemPrompt()+drainContextEvents();
-    const messages=[{role:'system',content:sys},...(s?.history||[]),{role:'user',content:text}];
-
-    let raw;
-    if(SETTINGS.offline){
-      raw=await callOfflineModel(messages);
-    }else{
-      raw=await streamOpenRouterJSON(messages,partial=>{
-        const p=partialSpeechFromRaw(partial);
-        if(p&&p!==shown){
-          shown=p;ensureBubble();
-          bubble.innerHTML=marked.parse(stripSignals(shown));
-          statusEl.textContent='Streaming…';scrollToBottom();
-        }
-      },abortController.signal);
-    }
-
-    removeTypingIndicator();
-    const turn=parseOzoJSON(raw);
-    lastSpeechForNotif=turn.speech||'';
-
-    applyEmotion(mapEmotion(turn.emotion));
-
-    if(turn.speech){
-      ensureBubble();
-      bubble.innerHTML=marked.parse(stripSignals(turn.speech));
-      addCopyCodeBtns(bubble);
-      acts.appendChild(makeActBtn('Copy',ICONS.copy,()=>copyText(stripSignals(turn.speech))));
-      scrollToBottom();
-      saveMsg('ozo',{text:turn.speech});
-    }
-
-    if(turn.widget&&turn.widget.type&&turn.widget.type!=='none'){
-      openOrUpdateWidget(turn.widget);
-    }
-    if(turn.hardware_request&&turn.hardware_request.type&&turn.hardware_request.type!=='none'){
-      handleHardwareRequest(turn.hardware_request);
-    }
-    if(turn.navigation?.type==='open_url'&&turn.navigation.url){
-      doOpenUrl(turn.navigation.url,turn.navigation.label||turn.navigation.url);
-    }else if(turn.navigation?.type==='search'&&turn.navigation.query){
-      doSearch(turn.navigation.query);
-    }
-
-    saveHistory(text,turn.speech||'');
-    if(document.visibilityState!=='visible')sendOzoNotification('Ozo',stripSignals(turn.speech||'').slice(0,120));
-
-    stopWander();startIdle();
-  }catch(err){
-    removeTypingIndicator();
-    if(err.name==='AbortError'){
-      if(shown){ensureBubble();addCopyCodeBtns(bubble);saveMsg('ozo',{text:shown});saveHistory(text,shown);}
-      showToast('Stopped.');
-    }else{
-      console.error(err);
-      appendOzoBubble('Sorry, something went wrong — check console.',false);
-    }
-    stopWander();startIdle();
-  }finally{
-    sendBtn.style.display='flex';stopBtn.style.display='none';
-    sendBtn.disabled=false;isStreaming=false;abortController=null;
-    intentOneOff=false;updateIntentUI();
-  }
-}
-
-/* ══════════════════════════════════════════════
-   EVENTS
-══════════════════════════════════════════════ */
-sendBtn.addEventListener('click',()=>{
-  const t=textarea.value.trim();if(!t)return;
-  textarea.value='';eyesNotice(0,8,1.05,400);handleInput(t);
-});
-textarea.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendBtn.click();}});
-textarea.addEventListener('input',()=>{textarea.style.height='auto';textarea.style.height=Math.min(textarea.scrollHeight,160)+'px';});
-textarea.addEventListener('focus',()=>{eyesNotice(0,10,1,400);});
-stopBtn.addEventListener('click',()=>abortController?.abort());
-$('toggleSidebar').addEventListener('click',()=>{sidebarOpen=!sidebarOpen;$('sidebar').classList.toggle('collapsed',!sidebarOpen);});
-$('newChatBtn').addEventListener('click',()=>{eyesNotice(-8,-6,1,500);startNewChat();});
-$('exportBtn').addEventListener('click',exportChat);
-$('clearChatBtn').addEventListener('click',()=>{
-  showModal('Clear chat','All messages will be deleted.','Clear',()=>{
-    const s=getSession(currentChatId);
-    if(s){s.messages=[];s.history=[];s.title='New Chat';upsertSession(s);}
-    renderChatFromSession(getSession(currentChatId)||{messages:[]});renderSidebar();
-  });
-});
-chatEl.addEventListener('scroll',()=>{
-  const near=chatEl.scrollHeight-chatEl.scrollTop-chatEl.clientHeight<120;
-  scrollBtn.classList.toggle('visible',!near&&chatEl.scrollHeight>chatEl.clientHeight+100);
-});
-scrollBtn.addEventListener('click',scrollToBottom);
-
-/* ══════════════════════════════════════════════
-   JXO STREAM
-══════════════════════════════════════════════ */
-const JXO_PLAIN_SYSTEM_PROMPT=`You are Ozo, an AI assistant made by Jxo. You are friendly, concise, and helpful.
-Use markdown for formatting when it helps (lists, code blocks, headers, etc). Reply in plain natural language (not JSON).
-
-EMOTION SIGNALS — you can embed these anywhere in your response to move your eyes. They will be stripped before display:
-[OZO:HAPPY] [OZO:SAD] [OZO:SURPRISE] [OZO:THINK] [OZO:EXCITED] [OZO:CURIOUS] [OZO:NEUTRAL]`;
-
-async function streamJxoReply(query){
-  const jxoBox=$('jxoResponse');
-  jxoBox.style.display='block';
-  jxoBox.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
-  startThink();
-  const messages=[{role:'system',content:JXO_PLAIN_SYSTEM_PROMPT},{role:'user',content:query}];
-  try{
-    const resp=await fetch(OR_URL,{method:'POST',headers:getHeaders(),body:JSON.stringify({model:SELECTED_MODEL,stream:true,messages})});
-    if(!resp.ok){jxoBox.textContent='Error '+resp.status;startJxoWander();return;}
-    let accumulated='';
-    const reader=resp.body.getReader();const decoder=new TextDecoder();let buffer='';
-    jxoBox.innerHTML='';
-    while(true){
-      const{done,value}=await reader.read();if(done)break;
-      buffer+=decoder.decode(value,{stream:true});
-      const lines=buffer.split(/\r?\n/);buffer=lines.pop()||'';
-      for(const line of lines){
-        if(!line.trim())continue;
-        const piece=extractDelta(line);
-        if(piece!==null){processSignalsInChunk(piece);accumulated+=piece;jxoBox.innerHTML=marked.parse(stripSignals(accumulated));jxoBox.scrollTop=jxoBox.scrollHeight;}
-      }
-    }
-    startJxoWander();
-  }catch(err){jxoBox.textContent='Stream error.';startJxoWander();console.error(err);}
-}
-
-/* ══════════════════════════════════════════════
-   SETTINGS MODAL
-══════════════════════════════════════════════ */
-const settingsOverlay=$('settingsOverlay');
-$('settingsBtn').addEventListener('click',()=>{settingsOverlay.style.opacity='1';settingsOverlay.style.pointerEvents='all';$('settingsModal').style.transform='scale(1)';});
-function closeSettings(){settingsOverlay.style.opacity='0';settingsOverlay.style.pointerEvents='none';$('settingsModal').style.transform='scale(.96)';}
-$('settingsClose').addEventListener('click',closeSettings);
-settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)closeSettings();});
-
-/* ══════════════════════════════════════════════
-   BOOT — async, fetches keys first
-══════════════════════════════════════════════ */
-(async () => {
-  marked.setOptions({breaks:true,gfm:true});
-  updateIntentUI();
-  initSettingsUI();
-  startEyeLoop();
-
-  // Start eye animation during load
-  if(isJxo){
-    document.body.classList.add('jxomode');
-    startJxoWander();
-  } else {
-    startIdle();
-  }
-
-  // Fetch API key
+async function selectWorkspaceFolder() {
   try {
-    await loadKey();
-  } catch(e) {
-    return; // loadKey already showed error UI
+    if (!('showDirectoryPicker' in window)) {
+      showToast('File System Access API not supported in this browser.');
+      return;
+    }
+    targetDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    folderBtnLabel.textContent = targetDirHandle.name;
+    folderBtn.classList.add('active-folder');
+    $('folderStatusText').textContent = `Connected to ${targetDirHandle.name}`;
+    showToast(`Workspace folder attached: ${targetDirHandle.name}`);
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      console.error('Folder picker error:', err);
+      showToast('Failed to connect folder.');
+    }
+  }
+}
+
+async function writeFileToWorkspace(filename, content) {
+  if (!targetDirHandle) {
+    showToast('Select a workspace folder to save generated files.');
+    return false;
+  }
+  try {
+    const fileHandle = await targetDirHandle.getFileHandle(filename, { create: true });
+    const writable = await fileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
+    showToast(`Saved ${filename} to ${targetDirHandle.name}`);
+    return true;
+  } catch (err) {
+    console.error('File write error:', err);
+    showToast(`Error writing ${filename}`);
+    return false;
+  }
+}
+
+/* Expose WebMCP Tools if supported */
+function initWebMCP() {
+  if (navigator.modelContext && navigator.modelContext.registerTool) {
+    try {
+      navigator.modelContext.registerTool({
+        name: 'write_file',
+        description: 'Create or overwrite a file in the user selected workspace directory',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            filename: { type: 'string' },
+            content: { type: 'string' }
+          },
+          required: ['filename', 'content']
+        },
+        execute: async ({ filename, content }) => {
+          const res = await writeFileToWorkspace(filename, content);
+          return res ? `File ${filename} saved.` : `Error saving ${filename}.`;
+        }
+      });
+    } catch (e) {
+      console.warn('WebMCP note:', e);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════
+   CHAT & STREAMING API HANDLER
+══════════════════════════════════════════════ */
+function showToast(msg){
+  toast.textContent=msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+function appendUserBubble(text) {
+  $('welcome')?.remove();
+  const row = document.createElement('div');
+  row.className = 'msg-row user';
+  row.innerHTML = `<div class="msg-wrap"><div class="msg-label">You</div><div class="bubble">${escapeHtml(text)}</div></div>`;
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function createOzoBubble() {
+  $('welcome')?.remove();
+  const row = document.createElement('div');
+  row.className = 'msg-row ozo';
+  const wrap = document.createElement('div');
+  wrap.className = 'msg-wrap';
+  wrap.innerHTML = `<div class="msg-label">Ozo</div><div class="bubble"></div>`;
+  row.appendChild(wrap);
+  chatEl.appendChild(row);
+  return wrap.querySelector('.bubble');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function handleSend() {
+  const q = textarea.value.trim();
+  if (!q || isStreaming) return;
+  textarea.value = '';
+  textarea.style.height = 'auto';
+
+  appendUserBubble(q);
+
+  // Check implicit widget requests locally for immediate responsiveness
+  const lowerQ = q.toLowerCase();
+  if (lowerQ.includes('calendar') || lowerQ.includes('date')) {
+    morphEyesTogether(true, 'calendar');
+  } else if (lowerQ.includes('time') || lowerQ.includes('clock')) {
+    morphEyesTogether(true, 'time');
+  } else if (lowerQ.includes('tic tac toe') || lowerQ.includes('tictactoe')) {
+    morphEyesTogether(true, 'tictactoe');
+  } else if (lowerQ.includes('weather')) {
+    morphEyesTogether(true, 'weather');
   }
 
-  // Hide loading screen
-  const ls = $('loadingScreen');
-  ls.classList.add('hidden');
-  setTimeout(() => ls.remove(), 350);
+  isStreaming = true;
+  sendBtn.disabled = true;
+  stopBtn.style.display = 'flex';
+  statusEl.textContent = 'Thinking…';
 
-  if(isJxo){
-    $('jxoQuery').textContent = jxoQuery ? `"${jxoQuery}"` : '';
-    if(jxoQuery) streamJxoReply(jxoQuery);
+  const bubble = createOzoBubble();
+  let fullText = '';
 
-  } else if(isMini){
-    document.body.classList.add('minimode');
-    sidebarOpen=false;
-    const sessions=getSessions();
-    if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
-    renderSidebar();
-    textarea.focus();
+  abortController = new AbortController();
 
-  } else {
-    const sessions=getSessions();
-    if(sessions.length>0){currentChatId=sessions[0].id;renderChatFromSession(sessions[0]);}else{startNewChat();}
-    renderSidebar();
-    textarea.focus();
-    if(SETTINGS.pip&&'documentPictureInPicture'in window){setTimeout(()=>enterDocPiP(),600);}
+  try {
+    const key = effectiveApiKey();
+    const res = await fetch(OR_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify({
+        model: SELECTED_MODEL,
+        messages: [
+          { role: 'system', content: buildSystemPrompt() },
+          { role: 'user', content: q }
+        ],
+        stream: true
+      }),
+      signal: abortController.signal
+    });
+
+    if (!res.ok) throw new Error(`API status ${res.status}`);
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n').filter(l => l.startsWith('data: '));
+
+      for (const line of lines) {
+        if (line.includes('[DONE]')) continue;
+        try {
+          const json = JSON.parse(line.replace('data: ', ''));
+          const delta = json.choices?.[0]?.delta?.content || '';
+          fullText += delta;
+
+          // Stream raw Markdown directly for maximum speed
+          if (!fullText.trim().startsWith('{')) {
+            bubble.innerHTML = marked.parse(fullText);
+          }
+        } catch (e) {}
+      }
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    // Process structured JSON if returned
+    if (fullText.trim().startsWith('{')) {
+      try {
+        const parsed = JSON.parse(fullText.trim());
+        if (parsed.speech) {
+          bubble.innerHTML = marked.parse(parsed.speech);
+        }
+        if (parsed.widget) {
+          morphEyesTogether(true, parsed.widget.type, parsed.widget.data);
+        }
+        if (parsed.files && parsed.files.length) {
+          for (const f of parsed.files) {
+            await writeFileToWorkspace(f.path, f.content);
+          }
+        }
+      } catch (e) {
+        bubble.innerHTML = marked.parse(fullText);
+      }
+    }
+
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      bubble.textContent = 'Error fetching response.';
+    }
+  } finally {
+    isStreaming = false;
+    sendBtn.disabled = false;
+    stopBtn.style.display = 'none';
+    if (!isWidgetActive) statusEl.textContent = 'Idle';
   }
-})();
+}
+
+/* ══════════════════════════════════════════════
+   EVENT LISTENERS & BINDINGS
+══════════════════════════════════════════════ */
+$('sendBtn').addEventListener('click', handleSend);
+textarea.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    handleSend();
+  }
+});
+
+folderBtn.addEventListener('click', selectWorkspaceFolder);
+$('settingsBtn').addEventListener('click', () => $('settingsOverlay').classList.add('open'));
+$('settingsClose').addEventListener('click', () => $('settingsOverlay').classList.remove('open'));
+$('clearChatBtn').addEventListener('click', () => {
+  chatEl.innerHTML = '<div id="welcome"><h2>Hey, I\'m Ozo</h2><p>Chat cleared.</p></div>';
+  closeEyeWidget();
+});
+
+document.querySelectorAll('.suggestion').forEach(s => {
+  s.addEventListener('click', () => {
+    textarea.value = s.dataset.q;
+    handleSend();
+  });
+});
+
+/* Initialize */
+window.addEventListener('load', async () => {
+  await loadKey();
+  startEyeLoop();
+  startIdle();
+  initWebMCP();
+  $('loadingScreen').classList.add('hidden');
+});
 </script>
 </body>
 </html>
